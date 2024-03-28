@@ -30,6 +30,22 @@ class TargetTables(BundleTables):
 
 
     @classmethod
-    def getTables(cls):
+    def getTableList(cls):
         """결합대상정보 생성 테이블 출력"""
         return cls.target_tables
+    
+    @classmethod
+    def getSchemas(cls):
+        """스키마명만 모아서 출력"""
+        schemas = []
+        for table in cls.target_tables:
+            schemas.append(table.getSchema())
+
+        return schemas
+    
+    @classmethod
+    def getTables(cls):
+        """테이블명만 모아서 출력"""
+        tables = []
+        for table in cls.target_tables:
+            tables.append(table.getTable())

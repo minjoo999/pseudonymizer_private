@@ -14,6 +14,16 @@ class BundleTables(ABC):
         pass
 
     @abstractmethod
-    def getTables(self):
+    def getTableList(self):
         """클래스 성격에 맞는 테이블을 출력"""
+        pass
+
+    @abstractmethod
+    def getSchemas(self):
+        """스키마명만 모아서 출력"""
+        pass
+
+    @abstractmethod
+    def getTables(self):
+        """테이블명만 모아서 출력"""
         pass

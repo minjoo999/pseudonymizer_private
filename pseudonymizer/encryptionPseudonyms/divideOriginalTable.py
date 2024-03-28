@@ -30,11 +30,11 @@ class DivideOriginalTable(PyMySQLQuery):
         table = self.original_table.getTable()
 
         # 컬럼명 중복시 해당 컬럼 삭제
-        super().dataQueryLanguage(f"ALTER TABLE {schema}.{table} DROP COLUMN {self.serial_col}")
+        super().dataQueryLanguage(f"ALTER TABLE {schema}.{table} DROP COLUMN {self.serial_col}_{self.serial_text}")
         super().executeQuery()
 
         # 컬럼 만들기
-        make_column = f"ALTER TABLE {schema}.{table} ADD COLUMN {self.serial_col} VARCHAR(1000)"
+        make_column = f"ALTER TABLE {schema}.{table} ADD COLUMN {self.serial_col}_{self.serial_text} VARCHAR(1000)"
         super().dataQueryLanguage(make_column)
         super().executeQuery()
 
@@ -42,7 +42,7 @@ class DivideOriginalTable(PyMySQLQuery):
         super().dataQueryLanguage("SET @counter = 0;")
         super().executeQuery()
         
-        super().dataQueryLanguage(f"UPDATE {schema}.{table} SET {self.serial_col} = CONCAT('{self.serial_text}', @counter := @counter + 1);")
+        super().dataQueryLanguage(f"UPDATE {schema}.{table} SET {self.serial_col}_{self.serial_text} = CONCAT('{self.serial_text}', @counter := @counter + 1);")
         super().executeQuery()
 
     def insertKey(self):

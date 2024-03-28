@@ -15,7 +15,7 @@ class EncryptKeyCol(PyMySQLQuery):
         self.salt_col = None
 
     def addKeyTables(self, key_tables: KeyTables):
-        """원본 테이블, 결합키 테이블, 결합대상정보 테이블 객체 통해 입력"""
+        """결합키 테이블 객체 통해 입력"""
         self.key_tables = key_tables
 
     def addSaltCol(self, salt_col: str):
@@ -27,6 +27,7 @@ class EncryptKeyCol(PyMySQLQuery):
         for key_table in self.key_tables:
             schema = key_table.getSchema()
             table = key_table.getTable()
+            self.createSalt(schema, table, self.key_tables.key_col, self.salt_col)
             self.createKey(func, schema, table, self.key_tables.key_col, self.salt_col)
 
     def createKey(self, func: str, schema: str, table: str, key_col: str, salt_col: str):

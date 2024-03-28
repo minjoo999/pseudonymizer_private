@@ -34,6 +34,26 @@ class KeyTables(BundleTables):
             cls.serial_cols.append(table.serial_col)
 
     @classmethod
-    def getTables(cls):
+    def getTableList(cls):
         """결합키 생성 테이블 출력"""
         return cls.key_tables
+    
+    @classmethod
+    def getSchemas(cls):
+        """스키마명만 모아서 출력"""
+        schemas = []
+        for table in cls.key_tables:
+            schemas.append(table.getSchema())
+
+        return schemas
+    
+    @classmethod
+    def getTables(cls):
+        """테이블명만 모아서 출력"""
+        tables = []
+        for table in cls.key_tables:
+            tables.append(table.getTable())
+
+    @classmethod
+    def getSerialCols(cls):
+        return cls.serial_cols
