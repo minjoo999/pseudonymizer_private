@@ -10,15 +10,15 @@ class CreateMappingTable(PyMySQLQuery):
         super().connectDatabase(serverIP, port_num, user_name, database_name, kr_encoder)
 
         self.key_tables = None
-        self.mapping_table = TableContainer()
+        self.mapping_table = None
         
     def addKeyTables(self, key_tables: KeyTables):
         """결합키 테이블 객체 입력"""
         self.key_tables = key_tables
 
-    def addMappingTable(self, schema: str, table: str):
+    def addMappingTable(self, mapping_table: TableContainer):
         """매핑테이블 스키마, 테이블 이름 입력"""
-        self.mapping_table.setSchemaTable(schema=schema, table=table)
+        self.mapping_table = mapping_table
 
     def joinDB(self):
         """일련번호를 결합키 기준으로 결합하여 매핑테이블 만드는 메서드
