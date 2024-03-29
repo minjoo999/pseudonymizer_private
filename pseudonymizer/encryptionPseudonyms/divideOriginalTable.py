@@ -12,7 +12,6 @@ class DivideOriginalTable(PyMySQLQuery):
         self.serial_col = None
         self.serial_text = None
         self.key_cols = None
-        
 
     def addInitTables(self, init_tables: InitTables):
         """원본 테이블, 결합키 테이블, 결합대상정보 테이블 객체 통해 입력"""
@@ -50,21 +49,25 @@ class DivideOriginalTable(PyMySQLQuery):
         key_table = self.init_tables.key_table
         key_schema = key_table.getSchema()
         key_result = key_table.getTable()
+        join_key = self.init_tables.join_key
+
+        original_schema = self.original_table.getSchema()
+        original_table = self.original_table.getTable()
 
         join_columns = ', '.join(self.key_cols)
 
         super().dataQueryLanguage(f"DROP TABLE IF EXISTS {key_schema}.{key_result}")
         super().executeQuery()
         
-        sql = f"CREATE TABLE {key_schema}.{key_result} AS SELECT {self.serial_col}, {join_columns} FROM {self.original_table}"
+        sql = f"CREATE TABLE {key_schema}.{key_result} AS SELECT {self.serial_col}_{self.serial_text}, {join_columns} FROM {original_schema}.{original_table}"
         super().dataQueryLanguage(sql)
         super().executeQuery()
 
         # 결합키 컬럼 만들기
-        super().dataQueryLanguage(f"ALTER TABLE {key_schema}.{key_result} ADD COLUMN {self.key_cols} VARCHAR(1000)")
+        super().dataQueryLanguage(f"ALTER TABLE {key_schema}.{key_result} ADD COLUMN {join_key} VARCHAR(1000)")
         super().executeQuery()
 
-        super().dataQueryLanguage(f"UPDATE {key_schema}.{key_result} SET {self.key_cols} = CONCAT({join_columns})")
+        super().dataQueryLanguage(f"UPDATE {key_schema}.{key_result} SET {join_key} = CONCAT({join_columns})")
         super().executeQuery()
         
     def insertTarget(self):
@@ -75,14 +78,17 @@ class DivideOriginalTable(PyMySQLQuery):
         target_schema = target_table.getSchema()
         target_result = target_table.getTable()
 
+        original_schema = self.original_table.getSchema()
+        original_table = self.original_table.getTable()
+
         super().dataQueryLanguage(f"DROP TABLE IF EXISTS {target_schema}.{target_result}")
         super().executeQuery()
 
-        create_sql = f"CREATE TABLE {target_schema}.{target_result} AS SELECT * FROM {self.original_table}"
+        create_sql = f"CREATE TABLE {target_schema}.{target_result} AS SELECT * FROM {original_schema}.{original_table}"
         super().dataQueryLanguage(create_sql)
         super().executeQuery()
 
         for column in self.key_cols:
-            drop_sql = f"ALTER TABLE {target_schema}.{target_table} drop {column}"
+            drop_sql = f"ALTER TABLE {target_schema}.{target_result} DROP COLUMN {column}"
             super().dataQueryLanguage(drop_sql)
             super().executeQuery()
