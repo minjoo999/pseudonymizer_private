@@ -51,9 +51,9 @@ class T_Closeness(EquivalentClass):
         # 민감속성의 고유한 값과 그 값의 비율 {v: count/len(V)}
         if sensitive_vector.dtype in ["int64", "float"]:
             # 오름차순 정렬 후 중복값을 제거한 SA를 전체 데이터의 길이로 나눈 값을 확률로 하는 누적분포를 계산 
-            ordered_vector = np.sort(sensitive_vector)
+            ordered_vector = np.sort(sensitive_vector)            
             unique_value, counts = np.unique(ordered_vector, return_counts = True)
-            np.set_printoptions(precision = 10)
+            ordered_scalar = np.array(unique_value)
             cumulative_distribution = np.cumsum(counts) / len(sensitive_vector)
     
         elif sensitive_vector.dtype in ["object", "category"]:
@@ -66,7 +66,7 @@ class T_Closeness(EquivalentClass):
         else: 
             raise ValueError("입력받은 {}은 유효한 자료형이 아닙니다.".format(dataseries.dtype))
         
-        return ordered_vector, cumulative_distribution
+        return ordered_scalar, cumulative_distribution
     
     def earthMoversDistance(self, qi_dist, total_dist):
         """scipy.wasserstein_distance(data_sensitivity, data_population)"""
@@ -74,7 +74,6 @@ class T_Closeness(EquivalentClass):
         # eucdistance = np.sqrt((qi_dist - total_dist)**2)
         # emdistance = np.sum(np.abs(qi_dist - total_dist))
         emdvalues: List = []
-        np.interp = np.interp()
         
         for key in qi_dist:
             emdvalue = np.sum( np.abs(qi_dist[key] - total_dist[key]) )
@@ -82,7 +81,7 @@ class T_Closeness(EquivalentClass):
         emdistance = np.mean(emdvalues)
         
         return emdistance
-    
+
     def kullbackLeiblerDivergence(self, qi_dist, total_dist):
         """KL발산: 두 확률분포의 평균과 표준편차를 입력으로 받아 계산"""
         return np.sum(qi_dist * np.log(qi_dist / total_dist))
@@ -97,30 +96,32 @@ class T_Closeness(EquivalentClass):
             super().categorizeEquivalentClass(quasi_identifiers)
             vector = np.array(self._dataframe[sensitive_attribute])
             sorted_total_data, total_distribution = self.checkSensitivesDistribution(vector)
+            print(len(sorted_total_data), len(total_distribution) )
             
             for group_key, index_value in self.equivalent_class.items():
                 # 1. Empirical Cummulative Probability Distribution
                 sorted_qi_data, qi_distribution[group_key] = self.checkSensitivesDistribution(vector[index_value])
-                sorted_merged_data = np.unique(np.concatenate(sorted_qi_data, sorted_total_data))
+                print(len(sorted_qi_data), len(qi_distribution[group_key]) )
+                sorted_merged_data = np.unique(np.concatenate( (sorted_qi_data, sorted_total_data) ))
                     # np.argsort(): 각 위치별 순서 나타내는 함수 | np.concatenate: 배열끼리 오름차순 병합
                 
                 # 2. 두 비대칭 경험누적확률분포의 길이를 맞추기 위한 선형 보간 수행
                 qi_ecdf = np.interp(
                     sorted_merged_data, sorted_qi_data, qi_distribution[group_key], left = 0, right = 1)
                 total_ecdf = np.interp(
-                    sorted_merged_data, sorted_total_data, qi_distribution[group_key], left = 0, right = 1) 
+                    sorted_merged_data, sorted_total_data, total_distribution, left = 0, right = 1) 
                 
                 # 3. KL Divergence
-                self.kullbackLeiblerDivergence(qi_ecdf, total_ecdf)
+                kld = self.kullbackLeiblerDivergence(qi_ecdf, total_ecdf)
                     # 2. Earth's Mover Distance
-                    # emd = self.earthMoversDistance(qi_distribution, total_distribution)
+                    # emd = self.earthMoversDistance(qi_ecdf, total_ecdf)
 
                 # 4.
                 if kld < tolerance:
                 # if emd < tolerance
                     T_data[group_key] = index_value
                 else:
-                    print(group_key, len(unique_sensitive_values))
+                    print(group_key, len(index_value))
             self.T_data = T_data
         else: 
             raise ValueError("입력받은 {}은 허용가능한 동질집합과 전체집단 간 확률분포 차이의 범위로서 유효하지 않습니다.".format(tolerance))
