@@ -5,11 +5,6 @@ from typing import *
 from numpy import exp
 from scipy.stats import laplace
 
-from pseudonymizer.pseudonymizer.deidentificationTechnique.equivalentClass import EquivalentClass
-from typing import List
-import numpy as np
-from numpy import exp
-from scipy.stats import laplace
 
 class DifferentialPrivacy(EquivalentClass):
     """라플라스 메커니즘 적용 차분 프라이버시 클래스
@@ -25,7 +20,7 @@ class DifferentialPrivacy(EquivalentClass):
         # ratio_bounded = epsilon(개인정보(가명정보) 보호 수준 결정)
         self.ratio_bounded = ratio_bounded
     
-    def dataDeviatingfromCI(self, boundary: float, attributes: List[str], sensitive_attribute: str):
+    def dataDeviatingfromCI(self, boundary: float, attributes: List, sensitive_attribute: str):
         """동질집합 내 평균에서 양쪽 3표준편차의 범위 99.7%에 들지 않는 민감정보 행 번호만 별도로 추출하는 메서드
         가설검정 기반에서 노이즈를 입력하는 방식인 GDP(Gaussian Differential Privacy) 방법
         이 방식은 통계 가설 관점에서 주어진 유의수준에서 최소의 제2종 오류를 trade-off function으로 나타냄으로써 차분 정보보호를 적용
@@ -52,48 +47,59 @@ class DifferentialPrivacy(EquivalentClass):
         특정 결과를 얻기 위한 쿼리 K를 각 데이터에 적용한 결과인 K(D1)와 K(D2)가 동일한 분포 S에 속할
         확률의 비율(두 데이터 분포의 차이)을 일정 수준(epsilon)보다 작도록 함
         """
+        col_num = self._dataframe.columns.get_loc(self.sensitive_attribute)
+        
         if outlier == "upper":
             for group_key, outlier_list in self.upperoutlier_dictionary.items():
+                
                 for i in outlier_list:
+                    upper_outlier = self._dataframe.iloc[i, col_num]
                     group_data, exception_data = 0, 0
+                    
                     group_list = self.equivalent_class[group_key]
-                    exception_list = group_list.remove(i)
-
-                    group_data = self._dataframe.loc[group_list, self.sensitive_attribute]
-                    exception_data = self._dataframe.loc[exception_list, self.sensitive_attribute]
-
+                    group_data = self._dataframe.iloc[group_list, col_num]
+                    
+                    # exception_list = group_list.remove(i)
+                    group_list.remove(i)
+                    exception_list = group_list[:]
+                    exception_data = self._dataframe.iloc[exception_list, col_num]
+                    
                     pseudonymize_data = self.laplaceMechanism(
-                        group_data, exception_data, self._dataframe.loc[i, self.sensitive_attribute], outlier)
+                        group_data, exception_data, upper_outlier, outlier)
                     self._dataframe.loc[i, self.sensitive_attribute] = pseudonymize_data
         
         elif outlier == "lower":
             for group_key, outlier_list in self.loweroutlier_dictionary.items():
                 for i in outlier_list:
+                    lower_outlier = self._dataframe.iloc[i, col_num]
                     group_data, exception_data = 0, 0
+                    
                     group_list = self.equivalent_class[group_key]
-                    exception_list = group_list.remove(i)
-
-                    group_data = self._dataframe.loc[group_list, self.sensitive_attribute]
-                    exception_data = self._dataframe.loc[exception_list, self.sensitive_attribute]
-
+                    group_data = self._dataframe.iloc[group_list, col_num]
+                    
+                    # exception_list = group_list.remove(i)
+                    group_list.remove(i)
+                    exception_list = group_list[:]
+                    exception_data = self._dataframe.iloc[exception_list, col_num]
+                    
                     pseudonymize_data = self.laplaceMechanism(
-                        group_data, exception_data, self._dataframe.loc[i, self.sensitive_attribute], outlier)
+                        group_data, exception_data, lower_outlier, outlier)
                     self._dataframe.loc[i, self.sensitive_attribute] = pseudonymize_data
-
-    @staticmethod
+                    
+    @classmethod
     def estimateLaplaceParameters(cls, data):
         """라플라스 분포의 모수 평균(mu)과 스케일(beta)을 추정하는 메서드"""
         mu = np.nanmean(data)
         beta = np.nanmean(np.abs(data - mu))
         return mu, beta
 
-    @staticmethod
+    @classmethod
     def laplacePDF(cls, x, mu, beta):
         """라플라스 연속확률분포 확률밀도함수
         확률분포(확률변수가 특정한 값을 가질 확률을 나타내는 함수)"""
         return (1 / (2*beta)) * exp(-abs(x-mu) / beta)
 
-    @staticmethod
+    @classmethod
     def calculateProbabilityRatio(cls, include_data, exclude_data):
         """확률변수 x가 라플라스 분포에 속할 확률과 특정 행의 포함 여부 데이터 간 비율을 계산하는 메서드"""
         # 두 데이터의 평균과 스케일 파라미터를 추정
@@ -108,13 +114,12 @@ class DifferentialPrivacy(EquivalentClass):
         # 두 데이터의 라플라스 분포에 속할 확률의 비율 계산
         return prob_ratio
 
-    @staticmethod
-    def laplaceMechanism(cls, include_data, exclude_data, particular_record, outlier):
+    def laplaceMechanism(self, include_data, exclude_data, particular_record, outlier):
         """라플라스 메커니즘을 적용하여 특정 데이터 행에 랜덤 노이즈값을 추가하는 메서드"""
         # 전역 민감도 계산
-        sensitivity = cls.calculateProbabilityRatio(include_data, exclude_data)
+        sensitivity = self.calculateProbabilityRatio(include_data, exclude_data)
         # 사용자 지정 개인정보 보호 수전 하이퍼파라미터 엡실론을 통해 스케일 파라미터 정의
-        beta = sensitivity / cls.ratio_bounded
+        beta = sensitivity / self.ratio_bounded
         # 평균 0, 베타를 분산으로 가지는 라플라스 분포에 속하는 랜덤 난수 추출
         noise = np.random.laplace(0, beta, len(include_data))
         
