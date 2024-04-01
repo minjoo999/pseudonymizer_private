@@ -16,23 +16,6 @@ class T_Closeness(EquivalentClass):
     basic Earth Mover's Distance algorithms
     Input : t_list
     Output : EMD
-    
-    total_range = []
-    for n in range(100):
-        total_range.append(n)
-        # 설정된 배열에 정수가 순서대로 추가
-        total_length = len(total_info)
-        
-        static_part = total_length / len(t_list)
-        # EMD(데이터의 분산 정도)를 계산하기 위해 나눗셈
-        extra_part = float(static_part) % float(len(t_list))
-        extra_part = extra_part.split(".")[0]
-        # 나누어 떨어지지 않는 여분으로 연산해주어야 할 때 계산
-
-        balance_value = len(t_list) - (extra_part)
-        # 데이터의 분산도 측정
-        # 여분의 연산으로 하는 부분(나누어 떨어지지 않는 수)에 대하여
-        # 배열의 마지막 부분에서 처리
     """
     def __init__(self, dataframe):
         super().__init__(dataframe)
@@ -67,50 +50,40 @@ class T_Closeness(EquivalentClass):
             raise ValueError("입력받은 {}은 유효한 자료형이 아닙니다.".format(dataseries.dtype))
         
         return ordered_scalar, cumulative_distribution
-    
-    def earthMoversDistance(self, qi_dist, total_dist):
-        """scipy.wasserstein_distance(data_sensitivity, data_population)"""
-        # 누적 분포가 아닌 개별 값의 분포가 필요
-        # eucdistance = np.sqrt((qi_dist - total_dist)**2)
-        # emdistance = np.sum(np.abs(qi_dist - total_dist))
-        emdvalues: List = []
-        
-        for key in qi_dist:
-            emdvalue = np.sum( np.abs(qi_dist[key] - total_dist[key]) )
-            emdvalues.append(emdvalue)
-        emdistance = np.mean(emdvalues)
-        
-        return emdistance
 
     def kullbackLeiblerDivergence(self, qi_dist, total_dist):
         """KL발산: 두 확률분포의 평균과 표준편차를 입력으로 받아 계산"""
-        return np.sum(qi_dist * np.log(qi_dist / total_dist))
-
+        try:
+            return np.sum(qi_dist * np.log(qi_dist / total_dist))
+        
+        except ZeroDivisionError as e:
+            return 1
+            
     def applyTCloseness(self, quasi_identifiers, tolerance: float, sensitive_attribute: str):
         """tolerance: 허용가능한 확률분포 차이의 범위를 정의하여 T-근접성을 적용하는 메서드"""
         T_data = dict()
         qi_distribution, total_distribution = {}, {}
 
-        if 0 <= tolerance <= 1: 
+        if tolerance >= 0: 
             # threshold
             super().categorizeEquivalentClass(quasi_identifiers)
             vector = np.array(self._dataframe[sensitive_attribute])
             sorted_total_data, total_distribution = self.checkSensitivesDistribution(vector)
             print(len(sorted_total_data), len(total_distribution) )
-            
+
             for group_key, index_value in self.equivalent_class.items():
                 # 1. Empirical Cummulative Probability Distribution
                 sorted_qi_data, qi_distribution[group_key] = self.checkSensitivesDistribution(vector[index_value])
-                print(len(sorted_qi_data), len(qi_distribution[group_key]) )
                 sorted_merged_data = np.unique(np.concatenate( (sorted_qi_data, sorted_total_data) ))
                     # np.argsort(): 각 위치별 순서 나타내는 함수 | np.concatenate: 배열끼리 오름차순 병합
-                
+
                 # 2. 두 비대칭 경험누적확률분포의 길이를 맞추기 위한 선형 보간 수행
                 qi_ecdf = np.interp(
                     sorted_merged_data, sorted_qi_data, qi_distribution[group_key], left = 0, right = 1)
                 total_ecdf = np.interp(
                     sorted_merged_data, sorted_total_data, total_distribution, left = 0, right = 1) 
-                
+                # print(qi_ecdf, total_ecdf)
+
                 # 3. KL Divergence
                 kld = self.kullbackLeiblerDivergence(qi_ecdf, total_ecdf)
                     # 2. Earth's Mover Distance
@@ -118,10 +91,13 @@ class T_Closeness(EquivalentClass):
 
                 # 4.
                 if kld < tolerance:
-                # if emd < tolerance
+                    # if emd < tolerance
+                    # print(group_key, kld, "\n", len(index_value), "\n")
                     T_data[group_key] = index_value
                 else:
-                    print(group_key, len(index_value))
-            self.T_data = T_data
+                    print(group_key, len(index_value), kld, "\n")
+                    
+                self.T_data = T_data
+                
         else: 
             raise ValueError("입력받은 {}은 허용가능한 동질집합과 전체집단 간 확률분포 차이의 범위로서 유효하지 않습니다.".format(tolerance))
