@@ -24,10 +24,10 @@ class EncryptKeyCol(PyMySQLQuery):
 
     def encryptKeyCol(self, func: str):
         """self.key_tables에 저장된 모든 key_tables를 대상으로 암호화를 실행하는 메서드"""
-        for key_table in self.key_tables:
+        for i, key_table in enumerate(self.key_tables.getTableList()):
             schema = key_table.getSchema()
             table = key_table.getTable()
-            self.createSalt(schema, table, self.key_tables.key_col, self.salt_col)
+            self.createSalt(schema, table, self.key_tables.key_col, self.salt_col, self.key_tables.serial_cols[i])
             self.createKey(func, schema, table, self.key_tables.key_col, self.salt_col)
 
     def createKey(self, func: str, schema: str, table: str, key_col: str, salt_col: str):
@@ -39,10 +39,10 @@ class EncryptKeyCol(PyMySQLQuery):
         else:
             print("SHA256과 SHA512 중 하나를 입력하십시오")
 
-    def createSalt(self, schema: str, table: str, salt_col: str, key_col: str):
+    def createSalt(self, schema: str, table: str, key_col: str, salt_col: str, serial_col: str):
         """SALT값을 만들어 테이블 특정 컬럼에 붙이는 메서드"""
         # SALT값 컬럼 만들기
-        super().dataQueryLanguage(f"ALTER TABLE {salt_col} VARCHAR(1000)")
+        super().dataQueryLanguage(f"ALTER TABLE {schema}.{table} ADD {salt_col} VARCHAR(1000)")
         super().executeQuery()
 
         # SALT값을 만들고 컬럼에 입력하기
@@ -51,7 +51,7 @@ class EncryptKeyCol(PyMySQLQuery):
 
         for row in rows:
             salt = binascii.hexlify(os.urandom(16)).decode(self.kr_encoder)
-            sql = f"UPDATE {schema}.{table} SET {salt_col} = {salt} WHERE {key_col} = {row[0]}"
+            sql = f"UPDATE {schema}.{table} SET {salt_col} = '{salt}' WHERE {serial_col} = '{row[0]}'"
             super().dataQueryLanguage(sql)
             super().executeQuery()
 

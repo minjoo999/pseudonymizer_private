@@ -30,7 +30,8 @@ class KeyTables(BundleTables):
         """InitTables에서 key_table만 골라내어 저장하기"""
         for table in cls.init_tables:
             cls.key_tables.append(table.key_table)
-            cls.serial_cols.append(table.serial_col)
+            cls.serial_cols.append(f"{table.serial_col}_{table.serial_text}")
+
 
     @classmethod
     def getTableList(cls):
