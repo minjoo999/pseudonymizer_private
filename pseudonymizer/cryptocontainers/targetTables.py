@@ -4,11 +4,10 @@ from pseudonymizer.cryptocontainers.initTables import InitTables
 
 class TargetTables(BundleTables):
     """결합대상정보 생성 테이블 저장 클래스"""
-    def __init__(self):
-        init_tables = []
-        target_tables = []
-        columns = None
-        serial_cols = []
+    init_tables = []
+    target_tables = []
+    columns = None
+    serial_cols = []
 
     @classmethod
     def addInitTables(cls, tables: InitTables):
@@ -49,3 +48,10 @@ class TargetTables(BundleTables):
         tables = []
         for table in cls.target_tables:
             tables.append(table.getTable())
+
+    @classmethod
+    def reset(cls):
+        cls.init_tables = []
+        cls.target_tables = []
+        cls.columns = None
+        cls.serial_cols = []

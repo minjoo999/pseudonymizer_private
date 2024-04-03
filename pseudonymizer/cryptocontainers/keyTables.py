@@ -4,12 +4,11 @@ from pseudonymizer.cryptocontainers.initTables import InitTables
 
 class KeyTables(BundleTables):
     """결합키 생성 테이블 저장 클래스"""
-    def __init__(self):
-        init_tables = []
-        key_tables = []
-        columns = None
-        serial_cols = []
-        key_col = None
+    init_tables = []
+    key_tables = []
+    columns = None
+    serial_cols = []
+    key_col = None
 
     @classmethod
     def addInitTables(cls, tables: InitTables):
@@ -57,3 +56,12 @@ class KeyTables(BundleTables):
     @classmethod
     def getSerialCols(cls):
         return cls.serial_cols
+    
+    @classmethod
+    def reset(cls):
+        """클래스 변수 초기화"""
+        cls.init_tables = []
+        cls.key_tables = []
+        cls.columns = None
+        cls.serial_cols = []
+        cls.key_col = None
