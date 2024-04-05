@@ -1,12 +1,10 @@
-# ./pseudonymizer/pseudonymizer/deidentificationTechnique/tCloseness.py
+# ./pseudonymizer/pseudonymizer/deidentificationTechnique/tClosenessNumeric.py
 
 from pseudonymizer.pseudonymizer.deidentificationTechnique.equivalent_class import EquivalentClass
 from typing import *
 from scipy.stats import wasserstein_distance
-from scipy.stats import wasserstein_distance
 
-
-class T_Closeness(EquivalentClass):
+class T_Closeness_N(EquivalentClass):
     """민감 정보(SA)의 분포를 전체 데이터 셋의 분포와 유사하도록 하는 T-근접성 클래스
     
     l-다양성과 달리 민감정보를 원본 그대로 배열에 저장한 후 
@@ -51,11 +49,25 @@ class T_Closeness(EquivalentClass):
         
         return ordered_scalar, cumulative_distribution
 
+    def earthMoversDistance(self, qi_dist, total_dist):
+        """scipy.wasserstein_distance(data_sensitivity, data_population)"""
+        # t수치 측정은 EMD(Earth Mover Distance)을 이용하여 계산
+        # eucdistance = np.sqrt((qi_dist - total_dist)**2)
+        # emdistance = np.sum(np.abs(qi_dist - total_dist))
+        emdvalues: List = []
+
+        for qi_p, total_p in zip(qi_dist, total_dist):
+            emdvalue = np.sum( np.abs(qi_p - total_p) )
+            emdvalues.append(emdvalue)
+        emdistance = np.mean(emdvalues)
+
+        return emdistance
+    
     def kullbackLeiblerDivergence(self, qi_dist, total_dist):
-        """KL발산: 두 확률분포의 평균과 표준편차를 입력으로 받아 계산"""
+        """KL발산: 두 확률분포의 평균과 표준편차를 입력으로 받아 계산
+        trash code"""
         try:
             return np.sum(qi_dist * np.log(qi_dist / total_dist))
-        
         except ZeroDivisionError as e:
             return 1
             
@@ -69,7 +81,6 @@ class T_Closeness(EquivalentClass):
             super().categorizeEquivalentClass(quasi_identifiers)
             vector = np.array(self._dataframe[sensitive_attribute])
             sorted_total_data, total_distribution = self.checkSensitivesDistribution(vector)
-            print(len(sorted_total_data), len(total_distribution) )
 
             for group_key, index_value in self.equivalent_class.items():
                 # 1. Empirical Cummulative Probability Distribution
@@ -82,21 +93,20 @@ class T_Closeness(EquivalentClass):
                     sorted_merged_data, sorted_qi_data, qi_distribution[group_key], left = 0, right = 1)
                 total_ecdf = np.interp(
                     sorted_merged_data, sorted_total_data, total_distribution, left = 0, right = 1) 
-                # print(qi_ecdf, total_ecdf)
 
+                # 3. Earth's Mover Distance
+                emd = self.earthMoversDistance(qi_ecdf, total_ecdf)
                 # 3. KL Divergence
-                kld = self.kullbackLeiblerDivergence(qi_ecdf, total_ecdf)
-                    # 2. Earth's Mover Distance
-                    # emd = self.earthMoversDistance(qi_ecdf, total_ecdf)
+                # kld = self.kullbackLeiblerDivergence(qi_ecdf, total_ecdf)
 
                 # 4.
-                if kld < tolerance:
-                    # if emd < tolerance
-                    # print(group_key, kld, "\n", len(index_value), "\n")
+                if emd < tolerance:
+                    # if kld < tolerance:
+                    print("T-근접성 성립하는 동질집합:", group_key, emd, "\n", len(index_value), "\n")
                     T_data[group_key] = index_value
                 else:
-                    print(group_key, len(index_value), kld, "\n")
-                    
+                    print("T-근접성에서 이탈한 동질집합:", group_key, emd, "\n", len(index_value), "\n")
+                    pass
                 self.T_data = T_data
                 
         else: 

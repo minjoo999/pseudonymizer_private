@@ -23,7 +23,7 @@ class EquivalentClass:
         return grouping_PI
     """
     def __init__(self, dataframe):
-        self._dataframe = dataframe
+        self._dataframe = dataframe.copy()
         self.equivalent_class = {}
 
     def __str__(self):
