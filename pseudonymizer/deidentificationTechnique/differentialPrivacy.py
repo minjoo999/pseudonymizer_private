@@ -66,6 +66,9 @@ class DifferentialPrivacy(EquivalentClass):
                     
                     pseudonymize_data = self.laplaceMechanism(
                         group_data, exception_data, upper_outlier, outlier)
+                    
+                    print(i, upper_outlier, pseudonymize_data)
+                    
                     self._dataframe.loc[i, self.sensitive_attribute] = pseudonymize_data
         
         elif outlier == "lower":
@@ -84,6 +87,9 @@ class DifferentialPrivacy(EquivalentClass):
                     
                     pseudonymize_data = self.laplaceMechanism(
                         group_data, exception_data, lower_outlier, outlier)
+                    
+                    print(i, lower_outlier, pseudonymize_data)
+                    
                     self._dataframe.loc[i, self.sensitive_attribute] = pseudonymize_data
                     
     @classmethod
@@ -97,7 +103,7 @@ class DifferentialPrivacy(EquivalentClass):
     def laplacePDF(cls, x, mu, beta):
         """라플라스 연속확률분포 확률밀도함수
         확률분포(확률변수가 특정한 값을 가질 확률을 나타내는 함수)"""
-        return (1 / (2*beta)) * exp(-abs(x-mu) / beta)
+        return (1/(2*beta)) * exp(-abs(x-mu) / beta)
 
     @classmethod
     def calculateProbabilityRatio(cls, include_data, exclude_data):
@@ -122,11 +128,12 @@ class DifferentialPrivacy(EquivalentClass):
         beta = sensitivity / self.ratio_bounded
         # 평균 0, 베타를 분산으로 가지는 라플라스 분포에 속하는 랜덤 난수 추출
         noise = np.random.laplace(0, beta, len(include_data))
+        random_noise = np.random.choice(noise)
         
         # 이상치에 노이즈 추가
         if outlier == "lower":
-            return particular_record + noise
+            return particular_record + random_noise if random_noise >= 0 else particular_record - random_noise
         elif outlier == "upper":
-            return particular_record - noise
+            return particular_record - random_noise if random_noise >= 0 else particular_record + random_noise
         else:
             raise ValueError(f"{outlier}은 유효한 이상치 유형이 아닙니다.")
