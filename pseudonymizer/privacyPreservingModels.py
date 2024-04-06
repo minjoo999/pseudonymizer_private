@@ -20,28 +20,28 @@ class PrivacyPreservingModel:
         self.LaplaceLDP = DifferentialPrivacy(self._dataframe, epsilon)
         self.GaussianLDP = GaussianDifferentialPrivacy(self._dataframe, epsilon)
 
-    def applyKAnonymityOrLDiversity(self, method: str, **kwargs):
+    def applyKAnonymityOrLDiversity(self, method: str, K: int, L: int, attributes: List[str], sensitive_attribute):
         """K-익명성과 L-다양성 모델을 선택적으로 적용하는 메서드
         input
         -----
         method: 프라이버시 보호 모델 메서드를 받고, 
         keyword arguments에 딕셔너리 형식으로 각 기법에 필요한 파라미터를 받아옴"""
         if method == "K":
-            self.Kanonymity.applyKAnonymity(**kwargs)
-            # Kanonymity Input | K: int, attribute: List[str]
+            self.Kanonymity.applyKAnonymity(K, attributes)
+                # Kanonymity Input | K: int, attributes: List[str]
             return self.Kanonymity.K_data
         elif method == "L":
-            self.Ldiversity.applyLDiversity(**kwargs)
-            # Ldiversity Input | K: int, L: int, attribute: List[str], sensitive_attribute
+            self.Ldiversity.applyLDiversity(K, L, attributes, sensitive_attribute)
+                # Ldiversity Input | K: int, L: int, attribute: List[str], sensitive_attribute
             return self.Ldiversity.L_data
         else:
             raise ValueError(f"입력받은 {method}는 유효한 개인정보 보호 기법이 아닙니다.")
         
     def applyLocalLDiversity(self, K: int, L: int, attributes: List[str], sensitive_attribute: str, LocalL: int):
         self.Ldiversity.applyLDiversity(K, L, attributes, sensitive_attribute)
-        # Ldiversity Input | K: int, L: int, attribute: List[str], sensitive_attribute
+            # Ldiversity Input | K: int, L: int, attribute: List[str], sensitive_attribute
         self.Ldiversity.applyLocalLDiversity(LocalL)
-        # LocalLdiversity | local_L: int
+            # LocalLdiversity | local_L: int
         return self.Ldiversity.LocalL_data
 
     def applyTCloseness(self, method, quasi_identifiers, sensitive_attribute: str, tolerance: float):
@@ -49,7 +49,7 @@ class PrivacyPreservingModel:
             self.TclosenessNum.applyTCloseness(quasi_identifiers, tolerance, sensitive_attribute)
             return self.TclosenessNum.T_data
         elif method == "Factor":
-            self.TclosenessFactor.applyTCloseness(quasi_identifiers, tolerance, sensitive_attribute)
+            self.TclosenessFac.applyTCloseness(quasi_identifiers, tolerance, sensitive_attribute)
             return self.TclosenessFac.T_data
         else:
             raise ValueError(f"입력받은 {method}는 유효한 t-근접성 기법 적용 자료형이 아닙니다.")
