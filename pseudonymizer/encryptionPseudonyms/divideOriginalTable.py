@@ -41,13 +41,11 @@ class DivideOriginalTable(PyMySQLQuery):
         super().dataQueryLanguage("SET @counter = 0;")
         super().executeQuery()
         
-        
         super().dataQueryLanguage(f"UPDATE {schema}.{table} SET {self.serial_col}_{self.serial_text} = CONCAT('{self.serial_text}', @counter := @counter + 1);")
         super().executeQuery()
         super().commitTransaction()
 
-
-    def insertKey(self):
+    def insertKey(self, salt: str):
         """결합키 테이블 DB 입력 메서드"""
         key_table = self.init_tables.key_table
         key_schema = key_table.getSchema()
@@ -61,20 +59,25 @@ class DivideOriginalTable(PyMySQLQuery):
 
         super().dataQueryLanguage(f"DROP TABLE IF EXISTS {key_schema}.{key_result}")
         super().executeQuery()
-        super().commitTransaction()
         
         sql = f"CREATE TABLE {key_schema}.{key_result} AS SELECT {self.serial_col}_{self.serial_text}, {join_columns} FROM {original_schema}.{original_table}"
         super().dataQueryLanguage(sql)
         super().executeQuery()
-        super().commitTransaction()
 
         # 결합키 컬럼 만들기
         super().dataQueryLanguage(f"ALTER TABLE {key_schema}.{key_result} ADD COLUMN {join_key} VARCHAR(1000)")
         super().executeQuery()
-        super().commitTransaction()
 
         super().dataQueryLanguage(f"UPDATE {key_schema}.{key_result} SET {join_key} = CONCAT({join_columns})")
         super().executeQuery()
+
+        # SALT값 컬럼 만들고 채우기
+        super().dataQueryLanguage(f"ALTER TABLE {key_schema}.{key_result} ADD COLUMN SALT VARCHAR(1000)")
+        super().executeQuery()
+
+        super().dataQueryLanguage(f"UPDATE {key_schema}.{key_result} SET SALT = '{salt}'")
+        super().executeQuery()
+
         super().commitTransaction()
         
     def insertTarget(self):
@@ -90,15 +93,14 @@ class DivideOriginalTable(PyMySQLQuery):
 
         super().dataQueryLanguage(f"DROP TABLE IF EXISTS {target_schema}.{target_result}")
         super().executeQuery()
-        super().commitTransaction()
 
         create_sql = f"CREATE TABLE {target_schema}.{target_result} AS SELECT * FROM {original_schema}.{original_table}"
         super().dataQueryLanguage(create_sql)
         super().executeQuery()
-        super().commitTransaction()
 
         for column in self.key_cols:
             drop_sql = f"ALTER TABLE {target_schema}.{target_result} DROP COLUMN {column}"
             super().dataQueryLanguage(drop_sql)
             super().executeQuery()
-            super().commitTransaction()
+
+        super().commitTransaction()

@@ -30,7 +30,6 @@ class EncryptKeyCol(PyMySQLQuery):
         schema = self.init_tables.key_table.getSchema()
         table = self.init_tables.key_table.getTable()
         serial_col = f"{self.serial_col}_{self.serial_text}"
-        self.createSalt(schema, table, self.salt_col, serial_col)
         self.createKey(func, schema, table, self.init_tables.join_key, self.salt_col)
 
     def createKey(self, func: str, schema: str, table: str, key_col: str, salt_col: str):
@@ -41,26 +40,6 @@ class EncryptKeyCol(PyMySQLQuery):
             self.applySHA512(schema, table, key_col, salt_col)
         else:
             print("SHA256과 SHA512 중 하나를 입력하십시오")
-
-    def createSalt(self, schema: str, table: str, salt_col: str, serial_col: str):
-        """SALT값을 만들어 테이블 특정 컬럼에 붙이는 메서드"""
-
-        # SALT값 컬럼 만들기
-        super().dataQueryLanguage(f"ALTER TABLE {schema}.{table} ADD {salt_col} VARCHAR(1000)")
-        super().executeQuery()
-        super().commitTransaction()
-        
-        # SALT값을 만들고 컬럼에 입력하기
-        super().dataQueryLanguage(f"SELECT * FROM {schema}.{table} limit 0, 1000")
-        rows = super().useFetchallQuery()
-
-        for row in rows:
-            salt = binascii.hexlify(os.urandom(16)).decode(self.kr_encoder)
-            sql = f"UPDATE {schema}.{table} SET {salt_col} = '{salt}' WHERE {serial_col} = '{row[0]}'"
-            super().dataQueryLanguage(sql)
-            super().executeQuery()
-
-        super().commitTransaction()
 
     def applySHA256(self, schema: str, table: str, key_col: str, salt_col: str):
         """SHA256 해시함수를 통해 결합키 컬럼을 암호화하는 메서드"""
