@@ -1,4 +1,3 @@
-# ./pseudonymizer/pseudonymizers/
 from pseudonymizer.pseudonymizer import Pseudonymizer
 
 class NameMaskingModule(Pseudonymizer):

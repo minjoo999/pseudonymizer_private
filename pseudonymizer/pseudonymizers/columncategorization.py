@@ -1,6 +1,5 @@
-import pandas as pd
 from pseudonymizer.pseudonymizer import Pseudonymizer
-
+import pandas as pd
 
 class CategorizationOfColumn(Pseudonymizer):
     """수치(연속형) 데이터를 임의의 수를 기준으로 범위(범주형)으로 설정하는 가명처리기법 구체클래스 """
