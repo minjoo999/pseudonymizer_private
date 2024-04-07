@@ -16,21 +16,27 @@ class PyMySQLQuery(PreprocessQuery):
     
     def connectDatabase(self, serverIP: str, port_num: int, user_name: str, database_name: str, kr_encoder: str):
         """MySQL DBMS 데이터베이스에 접속하는 메서드"""
-        self.DBconnection.connect_database(serverIP, port_num, user_name, database_name, kr_encoder)
+        self.DBconnection.connectDatabase(serverIP, port_num, user_name, database_name, kr_encoder)
     
     def dataQueryLanguage(self, sql):
         """SQL쿼리문 작성 메서드(데이터 추출 쿼리문 캡슐화)"""
         self.SQL = f"{sql}"
-    
+
     def executeQuery(self):
         """SQL쿼리문 실행 및 예외처리 메서드(데이터베이스로 쿼리를 보내서 실행)"""
         try:
-            self.DBconnection.cursor.execute(self.SQL)
-            action_output = self.DBconnection.cursor.fetchall()
-            return action_output
+            # 데이터베이스에 연결되어 있지 않은 경우, 연결을 시도
+            if self.DBconnection is None:
+                raise pymysql.Error
+            else:
+            # 연결된 데이터베이스의 커서를 사용하여 쿼리를 실행
+                self.DBconnection.cursor.execute(self.SQL)
+                action_output = self.DBconnection.cursor.fetchall()
+                return action_output
         
         except pymysql.Error as e:
             print(f"Error Executing Query: {e}")
+
 
     def useFetchallQuery(self):
         """SQL 쿼리 실행 결과의 cursor.fetchall() 을 사용할 수 있도록 하는 메서드"""
