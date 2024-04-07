@@ -1,4 +1,6 @@
 from pseudonymizer.pseudonymizer import Pseudonymizer
+from collections import Counter
+
 
 class AnonymizationSecurityMeasure(Pseudonym):
     """익명처리 기법이 적용된 정보의 안전성을 측정하는 지표"""
@@ -39,27 +41,35 @@ class AnonymizationSecurityMeasure(Pseudonym):
             raise ValueError(f"{parameter}은(는) 유효한 익명정보 안전성 평가지표가 아닙니다.")
             
     @classmethod
-    def meanDistributionECMetric(cls, x):
+    def meanDistributionECMetric(cls, X):
         """동질집합별 속성들에 대한 평균 분포도(분산) 계산 메서드"""
         if cls.degreeoffreedom == 0:  
             # 클래스 변수로 접근
             # 표본분산
-            variance_x = np.mean(abs(x - np.mean(x))**2)
+            variance_X = np.mean(abs(X - np.mean(X))**2)
         elif cls.degreeoffreedom == 1:
             # 불편분산(불편추정량)
-            variance_x = sum((x - np.mean(x))**2 for x in x) / (len(x) - 1)
+            variance_X = sum((x - np.mean(x))**2 for x in X) / (len(X) - 1)
         else:
             raise ValueError(f"{cls.degreeoffreedom}은(는) 유효한 자유도가 아닙니다.")
-        return variance_x
+        return variance_X
 
     @classmethod
-    def normalizedAverageECSizeMetric(cls, x):
+    def normalizedAverageECSizeMetric(cls, X):
         """정규화된 동질집합들의 평균 크기 계산 메서드(0과 1 사이로 데이터 범위 조정))"""
-        normalized_values = (x - min(x)) / (max(x) - min(x))
-        normalized_average = normalized_values / len(x)
+        normalized_values = (X - min(X)) / (max(X) - min(X))
+        normalized_average = normalized_values / len(X)
         return normalized_average
 
     @classmethod
-    def nonUniformEntropyMetric(cls, x, y):
+    def nonUniformEntropyMetric(cls, X):
         """비균일 엔트로피 방법을 이용한 K익명성 프라이버시 보호 모델에서의 정보 손실 측도"""
-        pass
+        prob_distribution = []
+        prob_distribution = [len(x) / len(X) for x in Counter(X).items()]
+        class_entropy = []
+
+        for p in prob_distribution:
+            if p != 0:
+                class_entropy.append(np.log(p)*p)
+        
+        return sum(class_entropy)
