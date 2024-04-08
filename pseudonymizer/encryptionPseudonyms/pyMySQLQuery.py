@@ -54,6 +54,18 @@ class PyMySQLQuery(PreprocessQuery):
     def closeConnection(self):
         """데이터베이스와의 연결을 종료하는 메서드"""
         self.DBconnection.close_connection()
+
+    def executeQueryAsDataFrame(self):
+        """SQL 쿼리를 실행한 결과를 판다스 데이터프레임으로 출력하는 메서드"""
+        try:
+            action_output = self.DBconnection.cursor.execute(self.SQL)
+            records = self.DBconnection.cursor.fetchall()
+            attributes = [i[0] for i in self.DBconnection.cursor.description]
+            querydata = pd.DataFrame(records, columns = attributes)
+            return querydata
+        
+        except pymysql.Error as e:
+            print(f"Executing query error: {e}")
         
 
 class ConnectMySQLserver:
