@@ -1,4 +1,4 @@
-from pseudonymizer.pseudonymizer import Pseudonymizer
+from pseudonymizer.pseudonym import Pseudonym
 from collections import Counter
 
 

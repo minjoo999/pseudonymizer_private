@@ -1,17 +1,15 @@
 import pymysql
 from pseudonymizer.encryptionPseudonyms.abstractPreprocessQuery import PreprocessQuery
 from typing import *
+from prettytable import PrettyTable
+import pandas as pd
 
 class PyMySQLQuery(PreprocessQuery):
     def __init__(self, pw):
         self._pw = pw
         self.connection = None
-        self.cursor = None
-        self.SQL = None
-
-    def __init__(self, pw):
-        self._pw = pw
         self.DBconnection = ConnectMySQLserver(self._pw)
+        self.cursor = None
         self.SQL = None
     
     def connectDatabase(self, serverIP: str, port_num: int, user_name: str, database_name: str, kr_encoder: str):
@@ -36,7 +34,18 @@ class PyMySQLQuery(PreprocessQuery):
         
         except pymysql.Error as e:
             print(f"Error Executing Query: {e}")
-
+        
+    def executeQueryAsDataFrame(self):
+        """SQL 쿼리를 실행한 결과를 판다스 데이터프레임으로 출력하는 메서드"""
+        try:
+            action_output = self.DBconnection.cursor.execute(self.SQL)
+            records = self.DBconnection.cursor.fetchall()
+            attributes = [i[0] for i in self.DBconnection.cursor.description]
+            querydata = pd.DataFrame(records, columns = attributes)
+            return querydata
+        
+        except pymysql.Error as e:
+            print(f"Executing query error: {e}")
 
     def useFetchallQuery(self):
         """SQL 쿼리 실행 결과의 cursor.fetchall() 을 사용할 수 있도록 하는 메서드"""

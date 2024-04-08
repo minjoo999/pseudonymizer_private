@@ -1,4 +1,4 @@
-from pseudonymizer.pseudonymizer import Pseudonymizer, Pseudonym
+from pseudonymizer.pseudonym import Pseudonym
 from numpy import dot
 from numpy.linalg import norm
 import Levenshtein
