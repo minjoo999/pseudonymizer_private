@@ -1,5 +1,3 @@
-# ./pseudonymizer/pseudonymizer/deidentificationTechnique/equivalent_class.py
-
 from typing import *
 
 class EquivalentClass:

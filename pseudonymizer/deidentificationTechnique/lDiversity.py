@@ -1,5 +1,3 @@
-# ./pseudonymizer/pseudonymizer/deidentificationTechnique/lDiversity.py
-
 from pseudonymizer.deidentificationTechnique.equivalentClass import EquivalentClass
 from typing import *
 from pseudonymizer.deidentificationTechnique.kAnonymity import K_Anonymity

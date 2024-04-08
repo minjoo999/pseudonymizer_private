@@ -1,6 +1,4 @@
-# ./pseudonymizer/pseudonymizer/deidentificationTechnique/differentialPrivacy.py
-
-from pseudonymizer.pseudonymizer.deidentificationTechnique.equivalentClass import EquivalentClass
+from pseudonymizer.deidentificationTechnique.equivalentClass import EquivalentClass
 from typing import *
 from numpy import exp
 from scipy.stats import laplace

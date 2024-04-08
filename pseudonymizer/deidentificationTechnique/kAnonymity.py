@@ -1,5 +1,3 @@
-# ./pseudonymizer/pseudonymizer/deidentificationTechnique/kAnonimity.py
-
 from pseudonymizer.deidentificationTechnique.equivalentClass import EquivalentClass
 from typing import *
 

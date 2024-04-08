@@ -1,6 +1,4 @@
-# ./pseudonymizer/pseudonymizer/deidentificationTechnique/tClosenessFactor.py
-
-from pseudonymizer.pseudonymizer.deidentificationTechnique.equivalent_class import EquivalentClass
+from pseudonymizer.deidentificationTechnique.equivalentClass import EquivalentClass
 from typing import *
 
 
