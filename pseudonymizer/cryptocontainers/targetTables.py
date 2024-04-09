@@ -1,5 +1,6 @@
 from pseudonymizer.cryptocontainers.bundleTables import BundleTables
 from pseudonymizer.cryptocontainers.initTables import InitTables
+from pseudonymizer.cryptocontainers.tableContainer import TableContainer
 
 
 class TargetTables(BundleTables):
@@ -9,6 +10,7 @@ class TargetTables(BundleTables):
     key_columns = None
     serial_cols = []
     target_columns = None
+    target_result = None
 
     @classmethod
     def addInitTables(cls, tables: InitTables):
@@ -24,7 +26,10 @@ class TargetTables(BundleTables):
     def addTargetColumns(cls, target_columns: list):
         """결합대상정보 컬럼명 입력 메서드"""
         cls.target_columns = target_columns
-
+    
+    @classmethod
+    def addTargetResult(cls, target_result: TableContainer):
+        cls.target_result = target_result
 
     @classmethod
     def selectTables(cls):
@@ -32,7 +37,6 @@ class TargetTables(BundleTables):
         for table in cls.init_tables:
             cls.target_tables.append(table.target_table)
             cls.serial_cols.append(table.serial_col)
-
 
     @classmethod
     def getTableList(cls):
@@ -64,3 +68,4 @@ class TargetTables(BundleTables):
         cls.key_columns = None
         cls.serial_cols = []
         cls.target_columns = None
+        cls.target_result = None
