@@ -19,4 +19,4 @@ class RandomRoundingPseudonymizer(Pseudonymizer):
             decimal_part = numeric - int(numeric)
             return int(numeric)+1 if decimal_part >= 0.5 else int(numeric)
         else:
-            raise ValueError("입력받은 {}은 유효한 라운딩 방법이 아닙니다.".format(rounding_type))
+            raise ValueError("입력받은 {}은 유효한 라운딩 방법이 아닙니다.".format(self.rounding_type))
