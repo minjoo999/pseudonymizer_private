@@ -6,8 +6,9 @@ class TargetTables(BundleTables):
     """결합대상정보 생성 테이블 저장 클래스"""
     init_tables = []
     target_tables = []
-    columns = None
+    key_columns = None
     serial_cols = []
+    target_columns = None
 
     @classmethod
     def addInitTables(cls, tables: InitTables):
@@ -15,9 +16,14 @@ class TargetTables(BundleTables):
         cls.init_tables.append(tables)
 
     @classmethod
-    def addColumns(cls, columns: list):
+    def addKeyColumns(cls, key_columns: list):
         """결합키 생성 항목 컬럼명 입력 메서드"""
-        cls.columns = columns
+        cls.key_columns = key_columns
+
+    @classmethod
+    def addTargetColumns(cls, target_columns: list):
+        """결합대상정보 컬럼명 입력 메서드"""
+        cls.target_columns = target_columns
 
 
     @classmethod
@@ -48,12 +54,13 @@ class TargetTables(BundleTables):
         tables = []
         for table in cls.target_tables:
             tables.append(table.getTable())
-
+        
         return tables
 
     @classmethod
     def reset(cls):
         cls.init_tables = []
         cls.target_tables = []
-        cls.columns = None
+        cls.key_columns = None
         cls.serial_cols = []
+        cls.target_columns = None
