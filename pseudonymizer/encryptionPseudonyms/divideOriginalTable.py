@@ -51,6 +51,7 @@ class DivideOriginalTable(PyMySQLQuery):
         key_schema = key_table.getSchema()
         key_result = key_table.getTable()
         join_key = self.init_tables.join_key
+        salt_col = self.init_tables.salt_col
 
         original_schema = self.original_table.getSchema()
         original_table = self.original_table.getTable()
@@ -72,7 +73,7 @@ class DivideOriginalTable(PyMySQLQuery):
         super().executeQuery()
 
         # SALT값 컬럼 만들고 채우기
-        super().dataQueryLanguage(f"ALTER TABLE {key_schema}.{key_result} ADD COLUMN SALT VARCHAR(1000)")
+        super().dataQueryLanguage(f"ALTER TABLE {key_schema}.{key_result} ADD COLUMN {salt_col} VARCHAR(1000)")
         super().executeQuery()
 
         super().dataQueryLanguage(f"UPDATE {key_schema}.{key_result} SET SALT = '{salt}'")

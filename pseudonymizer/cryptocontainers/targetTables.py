@@ -1,13 +1,16 @@
 from pseudonymizer.cryptocontainers.bundleTables import BundleTables
 from pseudonymizer.cryptocontainers.initTables import InitTables
+from pseudonymizer.cryptocontainers.tableContainer import TableContainer
 
 
 class TargetTables(BundleTables):
     """결합대상정보 생성 테이블 저장 클래스"""
     init_tables = []
     target_tables = []
-    columns = None
+    key_columns = None
     serial_cols = []
+    target_columns = None
+    target_result = None
 
     @classmethod
     def addInitTables(cls, tables: InitTables):
@@ -15,10 +18,18 @@ class TargetTables(BundleTables):
         cls.init_tables.append(tables)
 
     @classmethod
-    def addColumns(cls, columns: list):
+    def addKeyColumns(cls, key_columns: list):
         """결합키 생성 항목 컬럼명 입력 메서드"""
-        cls.columns = columns
+        cls.key_columns = key_columns
 
+    @classmethod
+    def addTargetColumns(cls, target_columns: list):
+        """결합대상정보 컬럼명 입력 메서드"""
+        cls.target_columns = target_columns
+    
+    @classmethod
+    def addTargetResult(cls, target_result: TableContainer):
+        cls.target_result = target_result
 
     @classmethod
     def selectTables(cls):
@@ -26,7 +37,6 @@ class TargetTables(BundleTables):
         for table in cls.init_tables:
             cls.target_tables.append(table.target_table)
             cls.serial_cols.append(table.serial_col)
-
 
     @classmethod
     def getTableList(cls):
@@ -48,10 +58,14 @@ class TargetTables(BundleTables):
         tables = []
         for table in cls.target_tables:
             tables.append(table.getTable())
+        
+        return tables
 
     @classmethod
     def reset(cls):
         cls.init_tables = []
         cls.target_tables = []
-        cls.columns = None
+        cls.key_columns = None
         cls.serial_cols = []
+        cls.target_columns = None
+        cls.target_result = None

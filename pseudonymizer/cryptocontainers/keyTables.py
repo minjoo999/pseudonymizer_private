@@ -54,6 +54,8 @@ class KeyTables(BundleTables):
         for table in cls.key_tables:
             tables.append(table.getTable())
 
+        return tables
+
     @classmethod
     def getSerialCols(cls):
         return cls.serial_cols

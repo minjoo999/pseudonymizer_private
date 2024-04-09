@@ -21,14 +21,7 @@ class CreateMappingTable(PyMySQLQuery):
         self.mapping_table = mapping_table
 
     def joinDB(self):
-        """일련번호를 결합키 기준으로 결합하여 매핑테이블 만드는 메서드
-           
-           예시 구문 : 
-           CREATE table joined_view2 AS
-           SELECT serialnum_2, serialnum_3, new_table_concat_r.result 
-           FROM new_table_concat_r
-           INNER JOIN new_table_concat_2 ON new_table_concat_r.result = new_table_concat_2.result;
-        """
+        """일련번호를 결합키 기준으로 결합하여 매핑테이블 만드는 메서드"""
         result_schema = self.mapping_table.getSchema()
         result_table = self.mapping_table.getTable()
 

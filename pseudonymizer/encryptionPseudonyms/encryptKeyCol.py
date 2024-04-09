@@ -20,16 +20,12 @@ class EncryptKeyCol(PyMySQLQuery):
         self.init_tables = init_tables
         self.serial_col = self.init_tables.serial_col
         self.serial_text = self.init_tables.serial_text
-
-    def addSaltCol(self, salt_col: str):
-        """Salt키 컬럼명 입력"""
-        self.salt_col = salt_col
+        self.salt_col = self.init_tables.salt_col
 
     def encryptKeyCol(self, func: str):
         """self.init_tables에 저장된 모든 key_table을 대상으로 암호화를 실행하는 메서드"""
         schema = self.init_tables.key_table.getSchema()
         table = self.init_tables.key_table.getTable()
-        serial_col = f"{self.serial_col}_{self.serial_text}"
         self.createKey(func, schema, table, self.init_tables.join_key, self.salt_col)
 
     def createKey(self, func: str, schema: str, table: str, key_col: str, salt_col: str):

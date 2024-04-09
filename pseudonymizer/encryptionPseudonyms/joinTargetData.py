@@ -31,31 +31,23 @@ class JoinTargetData(PyMySQLQuery):
         """
         schemas = self.target_tables.getSchemas()
         tables = self.target_tables.getTables()
+
         serial_cols = self.target_tables.serial_cols
+        target_cols = ', '.join(self.target_tables.target_columns)
+
         mapping_schema = self.mapping_table.getSchema()
         mapping_table = self.mapping_table.getTable()
         result_schema = self.result.getSchema()
         result_table = self.result.getTable()
 
-        create_sql = f"CREATE TABLE v{result_schema}.{result_table} AS "
-        select_sql = f"SELECT {mapping_schema}.{mapping_table}.*, "
+        create_sql = f"CREATE TABLE {result_schema}.{result_table} AS "
+        select_sql = f"SELECT {mapping_schema}.{mapping_table}.*, {target_cols} "
         from_sql = f"FROM {mapping_schema}.{mapping_table} "
         join_sql = f""
 
-    
         for i in range(len(tables)):
-            # 컬럼명 전부 구하고 그중 매핑테이블 컬럼명 빼서 SELECT 구문에 포함시키기
-            super().dataQueryLanguage(f"SELECT column_name FROM information_schema.columns WHERE table_schema = '{result_schema}' AND table_name = '{tables[i]}'")
-            result = super().executeQueryAsDataFrame()
-
-            li = result['COLUMN_NAME'].tolist()
-            li.remove(f"{serial_cols[i]}")
-            select_sql += f"{', '.join(li)}, "
+            join_sql += f"INNER JOIN {schemas[i]}.{tables[i]} ON {schemas[i]}.{tables[i]}.{serial_cols[i]} = {mapping_table}.{serial_cols[i]} "
             
-            join_sql += f"INNER JOIN {schemas[i]}.{tables[i]} ON {schemas[i]}.{tables[i]}.{serial_cols[i]} = {mapping_table}.{serial_cols[i]}"
-            
-        select_sql = select_sql[:-2] + " "
-
         sql = create_sql + select_sql + from_sql + join_sql
 
         super().dataQueryLanguage(sql)
