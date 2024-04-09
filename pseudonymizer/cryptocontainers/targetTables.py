@@ -49,6 +49,8 @@ class TargetTables(BundleTables):
         for table in cls.target_tables:
             tables.append(table.getTable())
 
+        return tables
+
     @classmethod
     def reset(cls):
         cls.init_tables = []
