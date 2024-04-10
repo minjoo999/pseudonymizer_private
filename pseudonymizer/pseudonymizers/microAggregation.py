@@ -8,7 +8,7 @@ class MicroAggregation(Pseudonymizer):
         self.calculate_type = calulate_type
         self.quasi_identifier = quasi_identifier
 
-    def pseudonymizeData(self, data, attribute: str, equivalent_class: dict()):
+    def pseudonymizeData(self, data, attribute: str, equivalent_class: dict):
         """Pseudonym 클래스 내에서 클래스 실행하는 메서드"""
         qi_index_list = equivalent_class[self.quasi_identifier]
         attribute_location = data.columns.get_loc(attribute)

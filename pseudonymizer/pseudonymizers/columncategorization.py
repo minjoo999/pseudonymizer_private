@@ -72,6 +72,7 @@ class CategorizationOfColumn(Pseudonymizer):
         """
         if isinstance(grouping_standard, list):
             num = len(grouping_standard)
+            print(num)
             df = pd.cut(df, bins = num, labels = grouping_standard, right = right)
             return df
 
