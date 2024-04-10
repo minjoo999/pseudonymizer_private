@@ -3,10 +3,11 @@ from datetime import datetime
 
 class CategorizationOfCharacter(Pseudonymizer):
     """문자형으로 저장된 정보에 대하여 상위의 개념으로 범주화하는 가명처리기법 구체클래스"""    
-    def __init__(self, category_type: str):
+    def __init__(self, category_type: str, category_mapping: dict):
         self.category_type = category_type
+        self.category_mapping = category_mapping
     
-    def pseudonymizeData(self, input_string: str, category_mapping: dict):
+    def pseudonymizeData(self, input_string: str):
         """식별성이 높은 그룹을 하나로 묶는 메서드
         일반적으로 나이 + 주소 + 성별 조합(동질 집합)이 재식별 가능성 있음
         주소 | 시군구만 남기고 읍면동 단위 삭제
@@ -25,7 +26,7 @@ class CategorizationOfCharacter(Pseudonymizer):
         if self.category_type == "date":
             return self.pseudonymizeDate(input_string)
         elif self.category_type == "user_definition":
-            return self.pseudonymizeDefinition(input_string, category_mapping)
+            return self.pseudonymizeDefinition(input_string, self.category_mapping)
         else:
             raise ValueError(f"{self.category_type}은 유효한 범주화 기법 적용 유형이 아닙니다.")
     
@@ -59,6 +60,7 @@ class CategorizationOfCharacter(Pseudonymizer):
         서울특별시 141,704개의 고유필지 → 2023년 기준 서울특별시 1,650개의 골목상권코드으로 그룹핑할 수 있도록 유형화
         코스피 상장주식회사 종목 810개 → 24개 업종 분류로 범주화"""
         for category, string_list in category_mapping.items():
+            print(string_list)
             # key는 범주이면서 value는 문자열 리스트일 때
             if string_tobeclassified in string_list: 
                 # 입력받은 문자열이 for루프에 걸린 문자열 리스트의 원소인 경우 해당 범주형 반환

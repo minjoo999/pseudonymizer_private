@@ -70,6 +70,7 @@ class Pseudonym:
 
 class PseudonymizerModule:
     def __init__(self):
+        """pseudonymizer 종류 얘기하는 파라미터 만들어놓고 + 그 파라미터에 따라 인풋 넣기"""
         self.masking_pseudonymizer = MaskingPseudonymizer(data_type, masking_domain, masking_part)
         self.char_categorization = CategorizationOfCharacter(category_type)
         self.num_categorization = CategorizationOfNumeric(numeric_type)
