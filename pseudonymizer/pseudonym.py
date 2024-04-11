@@ -14,7 +14,7 @@ from pseudonymizer.pseudonymizers.topandBottomCoding import TopandBottomCoding
 class Pseudonym:
     def __init__(self, dataframe, pseudonymizer_module):
         """원본정보(재현데이터)와 가명처리 구체 클래스를 인스턴스 변수로 선언하는(초기화) 생성자"""
-        self._dataframe = dataframe
+        self._dataframe = dataframe.copy()
         self.equivalent_class = {}
         self._pseudonymizers = []
         self._pseudonymDictionary = {}
