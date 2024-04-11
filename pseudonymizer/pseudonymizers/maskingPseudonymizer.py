@@ -22,9 +22,9 @@ class MaskingPseudonymizer(Pseudonymizer):
 
     def pseudonymizeData(self, data):
         if self.data_type == "name":
-            return self.name_masker.pseudonymzieData(data)
+            return self.name_masker.pseudonymizeData(data)
         elif self.data_type == "email":
-            return self.email_masker.pseudonymzieData(data)
+            return self.email_masker.pseudonymizeData(data)
         elif self.data_type == "resident_number":
             return self.resident_num_masker.pseudonymizeData(data)
         elif self.data_type == "business_number":
