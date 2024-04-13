@@ -14,7 +14,7 @@ from pseudonymizer.pseudonymizers.topandBottomCoding import TopandBottomCoding
 class Pseudonym:
     def __init__(self, dataframe, pseudonymizer_module):
         """원본정보(재현데이터)와 가명처리 구체 클래스를 인스턴스 변수로 선언하는(초기화) 생성자"""
-        self._dataframe = dataframe
+        self._dataframe = dataframe.copy()
         self.equivalent_class = {}
         self._pseudonymizers = []
         self._pseudonymDictionary = {}
@@ -70,6 +70,7 @@ class Pseudonym:
 
 class PseudonymizerModule:
     def __init__(self):
+        """pseudonymizer 종류 얘기하는 파라미터 만들어놓고 + 그 파라미터에 따라 인풋 넣기"""
         self.masking_pseudonymizer = MaskingPseudonymizer(data_type, masking_domain, masking_part)
         self.char_categorization = CategorizationOfCharacter(category_type)
         self.num_categorization = CategorizationOfNumeric(numeric_type)

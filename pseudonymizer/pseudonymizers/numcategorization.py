@@ -3,17 +3,19 @@ from datetime import datetime
 
 class CategorizationOfNumeric(Pseudonymizer):
     """수치(연속형) 데이터를 임의의 수를 기준으로 범위(범주형)으로 설정하는 가명처리기법 구체클래스 """
-    def __init__(self, numeric_type):
+    def __init__(self, numeric_type, grouping_standard=None, category_mapping: dict = None):
         self.numeric_type = numeric_type
+        self.grouping_standard = grouping_standard
+        self.category_mapping = category_mapping
     
-    def pseudonymizeData(self, input_numeric: float, grouping_standard):
+    def pseudonymizeData(self, input_numeric: float):
         """식별성이 높은 그룹을 하나로 묶는 메서드"""
         if self.numeric_type == "age":
-            return self.pseudonymizeAge(input_numeric, grouping_standard)
+            return self.pseudonymizeAge(input_numeric, self.grouping_standard)
         elif self.numeric_type == "income":
-            return self.pseudonymizeIncome(input_numeric, grouping_standard)      
+            return self.pseudonymizeIncome(input_numeric, self.grouping_standard)      
         elif self.numeric_type == "user_definition":
-            return self.pseudonymizeDefinition(input_numeric, grouping_standard)
+            return self.pseudonymizeDefinition(input_numeric, self.category_mapping)
         else: 
             raise ValueError(f"{self.numeric_type}은 유효한 범주화 기법 적용 유형이 아닙니다.")
     
@@ -70,6 +72,7 @@ class CategorizationOfNumeric(Pseudonymizer):
     def pseudonymizeDefinition(self, numeric_tobeclassified, category_mapping: dict):
         """사용자가 직접 구간을 설정하도록 하는 범주화 메서드
         intervals: [(0, 1000), (1000, 5000), (5000, 10000)]
+        category_mapping 형태 예시: {"A": (0, 1000). "B": (1000, 5000), "C": (5000, 10000)}
         """
         for category, interval in category_mapping.items():
             if not isinstance(interval, tuple) or len(interval) != 2:
