@@ -30,26 +30,24 @@ class CreateMappingTable(PyMySQLQuery):
 
             if len(key_tablenames) > 2:
                 for i in range(2, len(key_tablenames)):
-                    select_join_dql += f"{serialnum_columns[i]},
-                        INNER JOIN {key_schemas[i]}.{key_tablenames[i]} ON {key_schemas[0]}.{key_tablenames[0]}.{joinkey_column} = {key_schemas[i]}.{key_tablenames[i]}.{joinkey_column} "
+                    select_join_dql += f"{serialnum_columns[i]}, INNER JOIN {key_schemas[i]}.{key_tablenames[i]} ON {key_schemas[0]}.{key_tablenames[0]}.{joinkey_column} = {key_schemas[i]}.{key_tablenames[i]}.{joinkey_column} "
             else:
                 pass
-            select_join_dql = select_join_dql[:-2] + " "
             data_query_language = create_table_dql + select_join_dql
         else:
             pass
 
-        super().dataQueryLanguage(data_query_language)
+        super().dataQueryLanguage(data_query_language + " ")
         super().executeQuery()
         super().commitTransaction()
     
     @classmethod
     def addMappingTable(cls, schema, tablename):
-        # 매핑테이블의 스키마와 테이블명 DBContainer의 메서드 활용하여 생성 
+        """매핑테이블의 스키마와 테이블명 DBContainer의 메서드 활용하여 생성"""
         cls.mapping_table = DBContainer()
         cls.mapping_table.setSchemaTable(schema, tablename)
-        schema = cls.addMappingTable.getSchema()
-        tablename = cls.addMappingTable.getTable()
+        schema = cls.mapping_table.getSchema()
+        tablename = cls.mapping_table.getTable()
 
         return schema, tablename
     
@@ -58,31 +56,27 @@ class CreateMappingTable(PyMySQLQuery):
         """컬럼명 추가 메서드"""
         cls.column = column
 
-    @classmethod
-    def checkKeyTableInfo(cls, key_schemas: List, key_tablenames: List, joinkey_column: str, serialnum_columns: List):
+    def checkKeyTableInfo(self, key_schemas: List, key_tablenames: List, joinkey_column: str, serialnum_columns: List):
         for i in range(len(key_schemas)):
-            check_query = f"SELECT 1 FROM {key_schemas[i]}.{key_tablenames[i]} WHERE {joinkey_column} IS NOT NULL AND "
-            for col in serialnum_columns:
-                check_query += f"{col} IS NOT NULL AND "
-            check_query = check_query[:-5]
+            check_query = f"SELECT 1 FROM {key_schemas[i]}.{key_tablenames[i]} WHERE {joinkey_column} IS NOT NULL AND {serialnum_columns[i]} IS NOT NULL"
 
             # 검증 쿼리 실행
-            cls.mapping_table.dataQueryLanguage(check_query)
-            result = cls.mapping_table.executeQuery()
+            super().dataQueryLanguage(check_query)
+            result = super().executeQuery()
 
             # 검증 결과 확인
             if result:
                 print(f"{key_schemas[i]}.{key_tablenames[i]} 테이블은 필요한 내부 조인 키와 일련번호 컬럼을 가지고 있습니다.")
+                return True
             else:
                 print(f"{key_schemas[i]}.{key_tablenames[i]} 테이블은 필요한 내부 조인 키와 일련번호 컬럼을 가지고 있지 않습니다.")
+                return False
 
     @classmethod
     def createSelectJoinQuery(self, key_schemas: List, key_tablenames: List, joinkey_column: str, serialnum_columns: List):
-        select_dql = f"SELECT {key_schemas[0]}.{key_tablenames[0]}.{joinkey_column}, 
-                            {key_schemas[0]}.{key_tablenames[0]}.{serialnum_columns[0]}, 
-                            {key_schemas[1]}.{key_tablenames[1]}.{serialnum_columns[1]} "
+        select_dql = f"SELECT {key_schemas[0]}.{key_tablenames[0]}.{joinkey_column}, {key_schemas[0]}.{key_tablenames[0]}.{serialnum_columns[0]}, {key_schemas[1]}.{key_tablenames[1]}.{serialnum_columns[1]} "
         
-        from_dql = f"FROM {key_schemas[0]}.{key_tablenames[0]}.{joinkey_column} "
+        from_dql = f"FROM {key_schemas[0]}.{key_tablenames[0]} "
         join_dql = f"INNER JOIN {key_schemas[1]}.{key_tablenames[1]} "
         on_dql = f"ON {key_schemas[0]}.{key_tablenames[0]}.{joinkey_column} = {key_schemas[1]}.{key_tablenames[1]}.{joinkey_column}"
 
