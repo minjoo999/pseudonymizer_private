@@ -1,5 +1,4 @@
 from pseudonymizer.pseudonymizer import Pseudonymizer
-from typing import *
 
 class RandomRoundingPseudonymizer(Pseudonymizer):
     """
@@ -18,5 +17,16 @@ class RandomRoundingPseudonymizer(Pseudonymizer):
         elif self.rounding_type == "round":
             decimal_part = numeric - int(numeric)
             return int(numeric)+1 if decimal_part >= 0.5 else int(numeric)
+        elif self.rounding_type == "custom_round":
+            return self.custom_round(numeric)
         else:
             raise ValueError("입력받은 {}은 유효한 라운딩 방법이 아닙니다.".format(self.rounding_type))
+        
+    @classmethod
+    def custom_round(cls, number):
+        """자릿수에 맞게 숫자를 반올림하는 메서드"""
+        if number == 0:
+            return 0
+        else:
+            power = 10 ** (len(str(abs(int(number)))) - 1)
+            return round(number / power) * power
