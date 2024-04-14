@@ -32,8 +32,10 @@ class Pseudonym:
         groupby_data = self._dataframe.groupby(attributes)
         for group, data in groupby_data:
             if len(group) > 1:
-                key = tuple(group)
+                # key = tuple(group)
+                key = group if len(group) > 1 else group[0]
                 # 딕셔너리에서 키 값으로 리스트(동적 타입)는 사용할 수 없으므로 튜플로 변환
+                # 단일 값인 경우 그룹을 튜플이 아닌 값으로 설정
                 self.equivalent_class[key] = data.index.tolist()
                 # 동질 집합에 해당하는 행(레코드)의 인덱스 번호를 키 값으로 조회되도록 저장
                 
