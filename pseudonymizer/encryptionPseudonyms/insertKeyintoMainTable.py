@@ -1,5 +1,5 @@
 from pseudonymizer.cryptocontainers.bundleMainTable import BundleMainTable
-from pseudonymizer.cryptocontainers.buneldKeyTable import BundleKeyTable
+from pseudonymizer.cryptocontainers.bundleKeyTable import BundleKeyTable
 from pseudonymizer.encryptionPseudonyms.pyMySQLQuery import PyMySQLQuery
 
 
