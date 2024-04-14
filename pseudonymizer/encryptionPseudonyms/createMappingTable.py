@@ -1,52 +1,89 @@
-from pseudonymizer.cryptocontainers.keyTables import KeyTables
-from pseudonymizer.cryptocontainers.tableContainer import TableContainer
+from typing import *
+from pseudonymizer.cryptocontainers.DBContainer import DBContainer
 from pseudonymizer.encryptionPseudonyms.pyMySQLQuery import PyMySQLQuery
 
 
 class CreateMappingTable(PyMySQLQuery):
-    """매핑테이블 만들기 클래스"""
+    """결합연계정보인 일련번호 컬럼 간 매핑테이블 생성 클래스"""
+    columns = []
+
     def __init__(self, pw: str, serverIP: str, port_num: int, user_name: str, database_name: str, kr_encoder: str):
         super().__init__(pw = pw)
-        super().connectDatabase(serverIP, port_num, user_name, database_name, kr_encoder)
-
-        self.key_tables = None
+        super().connectDatabase(
+            serverIP, port_num, user_name, database_name, kr_encoder)
+        self.keytable_dictionary = {} # {key(키 스키마) : value(키 테이블)}
         self.mapping_table = None
-        
-    def addKeyTables(self, key_tables: KeyTables):
-        """결합키 테이블 객체 입력"""
-        self.key_tables = key_tables
 
-    def addMappingTable(self, mapping_table: TableContainer):
-        """매핑테이블 스키마, 테이블 이름 입력"""
-        self.mapping_table = mapping_table
+    def joinKeyTables(self, mapping_schema: str, mapping_tablename: str, key_schemas: List, key_tablenames: List, joinkey_column: str, serialnum_columns: List):
+        """일련번호 컬럼을 암호화된 결합키 기준으로 결합하여 매핑테이블 만드는 실행 메서드
+        joinKeyTables
+        -------------
+        key_schemas: 각 테이블의 스키마를 담은 리스트
+        key_tablenames: 각 테이블의 이름을 담은 리스트
+        joinkey_column: 내부 조인에 사용할 컬럼 이름
+        serialnum_columns: 일련번호 컬럼 이름들을 담은 리스트
+        """
+        schema, tablename = self.addMappingTable(mapping_schema, mapping_tablename)
+        if self.checkKeyTableInfo(key_schemas, key_tablenames, joinkey_column, serialnum_columns):
+            create_table_dql = f"CREATE TABLE {schema}.{tablename} AS "
+            select_join_dql = self.createSelectJoinQuery(key_schemas, key_tablenames, joinkey_column, serialnum_columns)
 
-    def joinDB(self):
-        """일련번호를 결합키 기준으로 결합하여 매핑테이블 만드는 메서드"""
-        result_schema = self.mapping_table.getSchema()
-        result_table = self.mapping_table.getTable()
-
-        schemas = self.key_tables.getSchemas()
-        tables = self.key_tables.getTables()
-        serial_cols = self.key_tables.getSerialCols()
-
-        super().dataQueryLanguage(f"DROP TABLE IF EXISTS {result_schema}.{result_table}")
-        super().executeQuery()
-
-        create_sql = f"CREATE TABLE {result_schema}.{result_table} AS "
-        select_sql = f"SELECT {schemas[0]}.{tables[0]}.{self.key_tables.key_col}, {schemas[0]}.{tables[0]}.{serial_cols[0]}, {schemas[1]}.{tables[1]}.{serial_cols[1]}  "
-        from_sql = f"FROM {schemas[0]}.{tables[0]} "
-        join_sql = f"INNER JOIN {schemas[1]}.{tables[1]} ON {schemas[0]}.{tables[0]}.{self.key_tables.key_col} = {schemas[1]}.{tables[1]}.{self.key_tables.key_col} "
-
-        if len(tables) > 2:
-            for i in range(2, len(tables)):
-                select_sql += f"{serial_cols[i]}, "
-                join_sql += f"INNER JOIN {schemas[i]}.{tables[i]} ON {schemas[0]}.{tables[0]}.{self.key_tables.key_col} = {schemas[i]}.{tables[i]}.{self.key_tables.key_col} "
+            if len(key_tablenames) > 2:
+                for i in range(2, len(key_tablenames)):
+                    select_join_dql += f"{serialnum_columns[i]},
+                        INNER JOIN {key_schemas[i]}.{key_tablenames[i]} ON {key_schemas[0]}.{key_tablenames[0]}.{joinkey_column} = {key_schemas[i]}.{key_tablenames[i]}.{joinkey_column} "
+            else:
+                pass
+            select_join_dql = select_join_dql[:-2] + " "
+            data_query_language = create_table_dql + select_join_dql
         else:
             pass
 
-        select_sql = select_sql[:-2] + " "
-
-        sql = create_sql + select_sql + from_sql + join_sql
-
-        super().dataQueryLanguage(sql)
+        super().dataQueryLanguage(data_query_language)
         super().executeQuery()
+        super().commitTransaction()
+    
+    @classmethod
+    def addMappingTable(cls, schema, tablename):
+        # 매핑테이블의 스키마와 테이블명 DBContainer의 메서드 활용하여 생성 
+        cls.mapping_table = DBContainer()
+        cls.mapping_table.setSchemaTable(schema, tablename)
+        schema = cls.addMappingTable.getSchema()
+        tablename = cls.addMappingTable.getTable()
+
+        return schema, tablename
+    
+    @classmethod
+    def addColumns(cls, column: str):
+        """컬럼명 추가 메서드"""
+        cls.column = column
+
+    @classmethod
+    def checkKeyTableInfo(cls, key_schemas: List, key_tablenames: List, joinkey_column: str, serialnum_columns: List):
+        for i in range(len(key_schemas)):
+            check_query = f"SELECT 1 FROM {key_schemas[i]}.{key_tablenames[i]} WHERE {joinkey_column} IS NOT NULL AND "
+            for col in serialnum_columns:
+                check_query += f"{col} IS NOT NULL AND "
+            check_query = check_query[:-5]
+
+            # 검증 쿼리 실행
+            cls.mapping_table.dataQueryLanguage(check_query)
+            result = cls.mapping_table.executeQuery()
+
+            # 검증 결과 확인
+            if result:
+                print(f"{key_schemas[i]}.{key_tablenames[i]} 테이블은 필요한 내부 조인 키와 일련번호 컬럼을 가지고 있습니다.")
+            else:
+                print(f"{key_schemas[i]}.{key_tablenames[i]} 테이블은 필요한 내부 조인 키와 일련번호 컬럼을 가지고 있지 않습니다.")
+
+    @classmethod
+    def createSelectJoinQuery(self, key_schemas: List, key_tablenames: List, joinkey_column: str, serialnum_columns: List):
+        select_dql = f"SELECT {key_schemas[0]}.{key_tablenames[0]}.{joinkey_column}, 
+                            {key_schemas[0]}.{key_tablenames[0]}.{serialnum_columns[0]}, 
+                            {key_schemas[1]}.{key_tablenames[1]}.{serialnum_columns[1]} "
+        
+        from_dql = f"FROM {key_schemas[0]}.{key_tablenames[0]}.{joinkey_column} "
+        join_dql = f"INNER JOIN {key_schemas[1]}.{key_tablenames[1]} "
+        on_dql = f"ON {key_schemas[0]}.{key_tablenames[0]}.{joinkey_column} = {key_schemas[1]}.{key_tablenames[1]}.{joinkey_column}"
+
+        return select_dql + from_dql + join_dql + on_dql
