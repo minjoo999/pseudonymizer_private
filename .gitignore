@@ -1,2 +1,7 @@
 .virtual_documents/
 tests/.ipynb_checkpoints
+pseudonymizer/__pycache__
+pseudonymizer/cryptocontainers/__pycache__
+pseudonymizer/deidentificationTechnique/__pycache__
+pseudonymizer/encryptionPseudonyms/__pycache__
+pseudonymizer/pseudonymizers/__pycache__
