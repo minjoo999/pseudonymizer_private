@@ -27,8 +27,3 @@ class AddressMaskingModule(Pseudonymizer):
                 return address
         else:
             print("입력받은 {}은(는) 주소가 아닙니다.".format(address))
-
-# 테스트
-address_masker = AddressMaskingModule("시군구")
-masked_address = address_masker.pseudonymizeData("서울특별시 강남구 역삼동")
-print("마스킹된 주소:", masked_address)

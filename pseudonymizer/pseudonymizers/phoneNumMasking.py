@@ -1,3 +1,4 @@
+import re
 from pseudonymizer.pseudonymizer import Pseudonymizer
 from typing import *
 
