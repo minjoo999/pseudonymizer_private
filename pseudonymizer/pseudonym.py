@@ -1,25 +1,18 @@
 from typing import List
 import pandas as pd
 from pseudonymizer.pseudonymizer import Pseudonymizer
-
-from pseudonymizer.pseudonymizers.maskingPseudonymizer import MaskingPseudonymizer
-from pseudonymizer.pseudonymizers.charcategorization import CategorizationOfCharacter
-from pseudonymizer.pseudonymizers.numcategorization import CategorizationOfNumeric
 from pseudonymizer.pseudonymizers.columncategorization import CategorizationOfColumn
 from pseudonymizer.pseudonymizers.microAggregation import MicroAggregation
-from pseudonymizer.pseudonymizers.randomRoundingPseudonymizer import RandomRoundingPseudonymizer
 from pseudonymizer.pseudonymizers.topandBottomCoding import TopandBottomCoding
 
 
 class Pseudonym:
-    def __init__(self, dataframe, pseudonymizer_module):
+    def __init__(self, dataframe):
         """원본정보(재현데이터)와 가명처리 구체 클래스를 인스턴스 변수로 선언하는(초기화) 생성자"""
         self._dataframe = dataframe.copy()
         self.equivalent_class = {}
         self._pseudonymizers = []
         self._pseudonymDictionary = {}
-        self._pseudonymizer_module = pseudonymizer_module
-            # PseudonymizerModule의 초기화 모듈을 인스턴스 변수로 설정
         
     def __str__(self):
         # __repr__
@@ -68,15 +61,3 @@ class Pseudonym:
     def getPseudonymizedDataframe(self):
         """가명처리 데이터 반환"""
         return self._dataframe
-    
-
-class PseudonymizerModule:
-    def __init__(self):
-        """pseudonymizer 종류 얘기하는 파라미터 만들어놓고 + 그 파라미터에 따라 인풋 넣기"""
-        self.masking_pseudonymizer = MaskingPseudonymizer(data_type, masking_domain, masking_part)
-        self.char_categorization = CategorizationOfCharacter(category_type)
-        self.num_categorization = CategorizationOfNumeric(numeric_type)
-        self.column_categorization = CategorizationOfColumn(numeric_type, grouping_standard, right, ascending)
-        self.micro_aggregation = MicroAggregation(cal_type, category)
-        self.random_rounding_pseudonymizer = RandomRoundingPseudonymizer(rounding_type)
-        self.top_bottom_coding = TopandBottomCoding()
