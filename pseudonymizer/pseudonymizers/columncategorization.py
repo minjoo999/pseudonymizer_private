@@ -21,50 +21,49 @@ class CategorizationOfColumn(Pseudonymizer):
     def makeLabels(self, num_type, df, grouping_standard, ascending: bool):
         """범주화 중 필요한 label을 만들어주는 클래스"""
         if num_type == "pct":
-
             labels = []
-            
-            for i in range(len(grouping_standard)):
-                if i == 0:
-                    label = f"{grouping_standard[i]} 미만"
-                    labels.append(label)
-                elif 0 < i < len(grouping_standard) - 1:
-                    label = f"{grouping_standard[i-1]} ~ {grouping_standard[i]}"
-                    labels.append(label)
-                else:
-                    label1 = f"{grouping_standard[i-1]} ~ {grouping_standard[i]}"
-                    labels.append(label1)
-                    label2 = f"{grouping_standard[i]} 이상"
-                    labels.append(label2)
-
-            if ascending == False:
-                return labels.reverse()
-            elif ascending == True:
-                return labels
+            if isinstance(grouping_standard, int):
+                return [f"{i} 이상" for i in range(0, 100, grouping_standard)]
             else:
-                raise ValueError("ascending 파라미터는 True / False 형태로 입력해 주십시오.")
+                for i in range(len(grouping_standard)):
+                    if i == 0:
+                        label = f"{grouping_standard[i]} 미만"
+                        labels.append(label)
+                    elif 0 < i < len(grouping_standard) - 1:
+                        label = f"{grouping_standard[i-1]} ~ {grouping_standard[i]}"
+                        labels.append(label)
+                    else:
+                        label1 = f"{grouping_standard[i-1]} ~ {grouping_standard[i]}"
+                        labels.append(label1)
+                        label2 = f"{grouping_standard[i]} 이상"
+                        labels.append(label2)
 
+                if ascending == False:
+                    labels.reverse()
+                return labels
 
         elif num_type == "bin":
-
             labels = []
-            
-            category_values = pd.cut(df, bins = grouping_standard).value_counts(sort=False)
-
-            for category in list(category_values.index):
-                start_value = category.left
-                end_value = category.right
-                labels.append(f"{start_value} ~ {end_value}")
+            if isinstance(grouping_standard, int):
+                bins = pd.cut(df, bins=grouping_standard).unique()
+                for category in bins:
+                    start_value = category.left
+                    end_value = category.right
+                    labels.append(f"{start_value} ~ {end_value}")
+            else:
+                category_values = pd.cut(df, bins=grouping_standard).value_counts(sort=False)
+                for category in list(category_values.index):
+                    start_value = category.left
+                    end_value = category.right
+                    labels.append(f"{start_value} ~ {end_value}")
 
             if ascending == False:
-                return labels.reverse()
-            elif ascending == True:
-                return labels
+                labels.reverse()
+            return labels
 
         else:
             raise ValueError(f"{num_type}은 유효한 범주화 기법 적용 유형이 아닙니다.")
 
-    
     def pseudonymizeAmountbyBin(self, df, grouping_standard, right: bool, ascending: bool):
         """기타 금액 구간별 범주화 메서드
         신용공여금액(예: 한도/건별대출, 담보대출, 리스/카드할부금융서비스 등)의 일정 급간화
@@ -82,8 +81,7 @@ class CategorizationOfColumn(Pseudonymizer):
 
         else:
             raise ValueError("grouping_standard는 list 또는 int 타입으로 입력해 주십시오.")
-                
-        
+            
     def pseudonymizeAmountbyPct(self, df, grouping_standard, right: bool, ascending: bool):
         """기타 금액 백분위에 의한 범주화 메서드
         개인사업자의 추청매출액/평당월임대료를 백분위수에 따라 매출등급화(90~100%, 65~90%, 35~65%, 10~35%, 0~10%)
@@ -96,13 +94,19 @@ class CategorizationOfColumn(Pseudonymizer):
         rank_df["rank"] = df.rank(method='min')
         
         percentiles = []
-
         for rank in rank_df["rank"]:
             percentile = ((rank - 1) / len(df['rank'])) * 100
             percentiles.append(percentile)
-
         rank_df["percentile"] = percentiles
         new_labels = self.makeLabels("pct", df, grouping_standard, ascending)
-        bins = [0] + grouping_standard + [100]
-        result_df = pd.cut(rank_df["percentile"], bins = bins, labels = new_labels, right = right)
+
+        if isinstance(grouping_standard, int):
+            # 디버깅 파트(int 타입에 안맞게 len(grouping_standard)로 발생하는 오류)
+            bins = [0] + list(range(100, 0, -grouping_standard))[::-1] + [100]
+        else:
+            # 중복된 값을 제거하고 정렬
+            unique_sorted_bins = sorted(set(grouping_standard))
+            bins = [0] + unique_sorted_bins + [100]
+
+        result_df = pd.cut(rank_df["percentile"], bins=bins, labels=new_labels, right=right, duplicates="drop")
         return result_df
