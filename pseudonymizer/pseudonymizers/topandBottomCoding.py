@@ -74,6 +74,7 @@ class TopandBottomCoding(Pseudonymizer):
         """퀵 정렬 알고리즘 메서드
         그 다음 작은 값과 큰 값을 담고 있는 배열을 대상으로 다시 퀵정렬 재귀호출"""
         # 배열의 길이에 따라 정렬 여부 결정
+        dataseries = pd.Series(dataseries)
         data = dataseries.to_list()
         if len(data) <= 1:
             return data
