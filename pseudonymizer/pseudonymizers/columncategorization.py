@@ -90,9 +90,9 @@ class CategorizationOfColumn(Pseudonymizer):
         - 백분위수 = ((등수 - 1) / 컬럼 레코드 갯수) * 100
         - 백분위수별로 pd.cut
         """
-        rank_df = df
+        rank_df = df.copy()
         rank_df["rank"] = df.rank(method='min')
-        
+
         percentiles = []
         for rank in rank_df["rank"]:
             percentile = ((rank - 1) / len(df['rank'])) * 100

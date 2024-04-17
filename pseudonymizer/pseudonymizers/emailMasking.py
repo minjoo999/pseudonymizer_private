@@ -24,7 +24,7 @@ class EmailMaskingModule(Pseudonymizer):
         if pattern_match:
             local_part = pattern_match.group(0)
             domain_part = pattern_match.group(1)
-            tld_part = pattern_math.group(2)
+            tld_part = pattern_match.group(2)
             # local_part, domain_part = email.split("@")
             
             if self.masking_domain:
