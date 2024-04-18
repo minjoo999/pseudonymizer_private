@@ -62,7 +62,8 @@ class TopandBottomCoding(Pseudonymizer):
         """중간값(백분위50%) 계산하는 메서드
         정적 메서드를 선언함으로써
         클래스의 네임스페이스 내 속하는 유틸리티 함수를 제공하며 해당 클래스의 인스턴스를 생성하지 않고(의존성 없이) 필요한 기능 수행"""
-        data = dataseries.to_list()
+        dataseries = pd.Series(dataseries)
+        data = dataseries.tolist()
         n = len(data)
         # 전체 길이가 홀수일 때(2로 나눈 나머지가 0일 때, 2로 나눈 몫의 위치에 해당하는 중간값)
         if n % 2 != 0:
@@ -76,7 +77,7 @@ class TopandBottomCoding(Pseudonymizer):
         그 다음 작은 값과 큰 값을 담고 있는 배열을 대상으로 다시 퀵정렬 재귀호출"""
         # 배열의 길이에 따라 정렬 여부 결정
         dataseries = pd.Series(dataseries)
-        data = dataseries.to_list()
+        data = dataseries.tolist()
         if len(data) <= 1:
             return data
         # 중간 위치의 값을 피봇으로 설정(임의의 값으로 설정할 수 있지만 상용코드임을 고려하여 결정)
@@ -101,7 +102,7 @@ class TopandBottomCoding(Pseudonymizer):
     def calculateQuartiles(self, dataseries):
         """백분위25%(Q1)과 백분위75%(Q3)를 중간값을 이용하여 구하는 메서드"""
         dataseries = pd.Series(dataseries)
-        data = dataseries.to_list()
+        data = dataseries.tolist()
         # 빠른 quick정렬 알고리즘(heap, merge으로도 대체 가능)
         datasorted = self.quickSorting(data)
         
