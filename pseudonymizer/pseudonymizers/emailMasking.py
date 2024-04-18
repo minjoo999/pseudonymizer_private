@@ -37,7 +37,7 @@ class EmailMaskingModule(Pseudonymizer):
                 return masked_local_part + "@" + domain_part + tld_part
 
         else:
-            print("입력받은 { }은 이메일 패턴에 매칭되지 않아 마스킹할 수 없습니다.".format(email))
+            print(f"입력받은 {pattern_match}은 이메일 패턴에 매칭되지 않아 마스킹할 수 없습니다.".format(email))
     
         # 이메일의 표준은 인터넷 표준 기구(IETF, Internet Engineering Task Force)에서 정의
         # re.sub(pattern, replace, text)

@@ -11,13 +11,15 @@ class PhoneNumberMaskingModule(Pseudonymizer):
     """   
     def pseudonymizeData(self, phone_number):
         """전화번호의 정규표현식을 기준으로 패턴 매칭이 되는 경우 마스킹을 수행하는 메서드"""
-        pattern_match = re.match(r"^\[0-9]-\[0-9]-\d{4}$", phone_number)
+        pattern_match = re.match(r"^\d{3}-\d{3,4}-\d{4}", phone_number)
+        # pattern_match = re.match(r"^\[0-9]-\[0-9]-\d{4}$", phone_number)
         
         if pattern_match:
             front_part, middle_part, rear_part = phone_number.split("-")
-            return front_part + middle_part + "*"*4
+            return front_part + "-" + middle_part + "-" + "*"*4
         # 다만, 전화번호 마지막 4자리는 ****와 같은 기호로 대체하지 않고 전체를 해시값으로 암호화하기도 한다는 점에 유의하여야 함
         # 암호화와 복호화는 알고리즘 및 키 관리 등 복잡한 과정이 필요하므로 높은 보안이 필요한 경우 고려함
         else:
-            print("입력받은 { }은 전화번호 패턴에 매칭되지 않아 마스킹할 수 없습니다.".format(phone_number))
+            # { } 문자열 포맷팅 공백오류
+            print("입력받은 {}은(는) 전화번호 패턴에 매칭되지 않아 마스킹할 수 없습니다.".format(phone_number))
             
