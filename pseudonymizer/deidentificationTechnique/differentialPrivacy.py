@@ -2,6 +2,7 @@ from pseudonymizer.deidentificationTechnique.equivalentClass import EquivalentCl
 from typing import *
 from numpy import exp
 from scipy.stats import laplace
+import numpy as np
 
 
 class DifferentialPrivacy(EquivalentClass):

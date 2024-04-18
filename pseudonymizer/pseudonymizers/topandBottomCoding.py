@@ -1,3 +1,4 @@
+import pandas as pd
 from pseudonymizer.pseudonymizer import Pseudonymizer
 
 class TopandBottomCoding(Pseudonymizer):
@@ -99,6 +100,7 @@ class TopandBottomCoding(Pseudonymizer):
             
     def calculateQuartiles(self, dataseries):
         """백분위25%(Q1)과 백분위75%(Q3)를 중간값을 이용하여 구하는 메서드"""
+        dataseries = pd.Series(dataseries)
         data = dataseries.to_list()
         # 빠른 quick정렬 알고리즘(heap, merge으로도 대체 가능)
         datasorted = self.quickSorting(data)
