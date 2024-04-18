@@ -1,3 +1,4 @@
+import numpy as np
 from pseudonymizer.deidentificationTechnique.equivalentClass import EquivalentClass
 from typing import *
 from scipy.stats import wasserstein_distance
