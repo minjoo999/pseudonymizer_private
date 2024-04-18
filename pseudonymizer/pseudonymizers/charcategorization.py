@@ -60,7 +60,6 @@ class CategorizationOfCharacter(Pseudonymizer):
         서울특별시 141,704개의 고유필지 → 2023년 기준 서울특별시 1,650개의 골목상권코드으로 그룹핑할 수 있도록 유형화
         코스피 상장주식회사 종목 810개 → 24개 업종 분류로 범주화"""
         for category, string_list in category_mapping.items():
-            print(string_list)
             # key는 범주이면서 value는 문자열 리스트일 때
             if string_tobeclassified in string_list: 
                 # 입력받은 문자열이 for루프에 걸린 문자열 리스트의 원소인 경우 해당 범주형 반환
