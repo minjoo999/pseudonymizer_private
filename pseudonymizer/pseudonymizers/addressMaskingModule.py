@@ -13,7 +13,9 @@ class AddressMaskingModule(Pseudonymizer):
     def pseudonymizeData(self, address: str):
         """주소의 일부에 대한 마스킹을 수행하는 메서드"""    
         # 주소 정규식 패턴
-        pattern = r"(\S+시|\S+도|\S+특별시|\S+특별자치시|\S+특별자치도) (\S+구|\S+시|\S+군) (\S+(읍|면|동))"
+        # 주소 구조: 시도 / 시군구 / 읍면동 / 슷자 
+        # 주소 구조 2 : 시도 / 시군구 / 길 / 숫자
+        pattern = r'(\S+[시|도]) | (\s+\S+[시|군|구]) | (\s+\S+[읍|면|동])'
         
         # 입력받은 주소가 정규식 패턴과 일치하는지 확인
         pattern_match = re.match(pattern, address)
