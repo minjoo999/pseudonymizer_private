@@ -91,14 +91,14 @@ class CategorizationOfColumn(Pseudonymizer):
         - 백분위수별로 pd.cut
         """
         rank_df = df.copy()
-        rank_df["rank"] = df.rank(method='min')
+        rank_df["rank"] = rank_df.rank(method='min')
 
         percentiles = []
         for rank in rank_df["rank"]:
-            percentile = ((rank - 1) / len(df['rank'])) * 100
+            percentile = ((rank - 1) / len(rank_df['rank'])) * 100
             percentiles.append(percentile)
         rank_df["percentile"] = percentiles
-        new_labels = self.makeLabels("pct", df, grouping_standard, ascending)
+        new_labels = self.makeLabels("pct", rank_df, grouping_standard, ascending)
 
         if isinstance(grouping_standard, int):
             # 디버깅 파트(int 타입에 안맞게 len(grouping_standard)로 발생하는 오류)
