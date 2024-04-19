@@ -9,11 +9,19 @@ class AddressMaskingModule(Pseudonymizer):
 
     def pseudonymizeData(self, address):
         """pseudonymizer 클래스 (추상) 기반 구체 메서드"""
-        pattern = r"(+S\+S\[시도]) (+S\+S\[시군구]) (+S\+S\[?읍|면|동]?)"
-        
+        pattern = r"(\S+[시도])(\s+\S+[시군구])(\s+\S+[읍면동])"
         pattern_match = re.match(pattern, address)
 
         # (시군구) (읍면동) 단위까지는 있어야 실행하도록 조건 설정
+        if pattern_match == None:
+            print("주소를 시군구 / 읍면동 단위까지 입력해 주세요")
+        else:
+            if self.masking_type == "government_area":
+                print("시군구")
+            elif self.masking_type == "district":
+                print("읍면동")
+            else:
+                print("올바른 masking_type을 입력해주세요.")
 
         # 특별시 / 광역시 / 특별자치시 (서울특별시, 인천광역시, 세종특별자치시 등)
 
